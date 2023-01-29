@@ -1,7 +1,7 @@
 use std::ops::{Add, Div, Mul, Sub};
 
 #[derive(Copy, Clone)]
-pub struct Degree(f32);
+pub struct Degree(pub f32);
 
 impl Degree {
     pub fn new(value: f32) -> Self {
