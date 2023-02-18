@@ -45,6 +45,7 @@ impl Sub for &Degree {
     }
 }
 
+#[derive(Copy, Clone)]
 pub struct Polar {
     radius: f32,
     angle: Degree,
@@ -97,9 +98,9 @@ impl Div for &Polar {
 }
 
 pub fn arc3_d(
-    position1: &Polar,
-    position2: &Polar,
-    radius: f32,
+    letter: &Polar,
+    height: &Polar,
+    size: f32,
     range: (Degree, Degree),
 ) -> Vec<(f32, f32)> {
     let start_range = range.0 .0.round() as i32;
@@ -111,39 +112,45 @@ pub fn arc3_d(
     }
     .map(|angle| {
         (
-            position1.radius * position1.angle.value().to_radians().cos()
-                + position2.radius * position2.angle.0.to_radians().cos()
-                + radius * (angle as f32).to_radians().cos(),
-            position1.radius * position1.angle.0.to_radians().sin()
-                + position2.radius * position2.angle.0.to_radians().sin()
-                + radius * (angle as f32).to_radians().sin(),
+            letter.radius * letter.angle.0.to_radians().cos()
+                + height.radius * height.angle.0.to_radians().cos()
+                + size * (angle as f32).to_radians().cos(),
+            letter.radius * letter.angle.0.to_radians().sin()
+                + height.radius * height.angle.0.to_radians().sin()
+                + size * (angle as f32).to_radians().sin(),
         )
     })
     .collect::<Vec<(f32, f32)>>()
 }
 
-pub fn dot(position: &Polar, orientation: Polar) -> Vec<(f32, f32)> {
+pub fn dot(letter: &Polar, height: &Polar, modifier: &Polar) -> Vec<(f32, f32)> {
     vec![(
-        position.radius * position.angle.0.to_radians().cos()
-            + 1.2 * orientation.radius * orientation.angle.0.to_radians().cos(),
-        position.radius * position.angle.0.to_radians().sin()
-            + 1.2 * orientation.radius * orientation.angle.0.to_radians().sin(),
+        letter.radius * letter.angle.0.to_radians().cos()
+            + height.radius * height.angle.0.to_radians().cos()
+            + modifier.radius * modifier.angle.0.to_radians().cos(),
+        letter.radius * letter.angle.0.to_radians().sin()
+            + height.radius * height.angle.0.to_radians().sin()
+            + modifier.radius * modifier.angle.0.to_radians().sin(),
     )]
 }
 
-pub fn normal_line(position: &Polar, orientation: Polar) -> Vec<(f32, f32)> {
+pub fn normal_line(letter: &Polar, height: &Polar, modifier: &Polar) -> Vec<(f32, f32)> {
     vec![
         (
-            position.radius * position.angle.0.to_radians().cos()
-                + orientation.radius * orientation.angle.0.to_radians().cos(),
-            position.radius * position.angle.0.to_radians().sin()
-                + orientation.radius * orientation.angle.0.to_radians().sin(),
+            letter.radius * letter.angle.0.to_radians().cos()
+                + height.radius * height.angle.0.to_radians().cos()
+                + modifier.radius * modifier.angle.0.to_radians().cos(),
+            letter.radius * letter.angle.0.to_radians().sin()
+                + height.radius * height.angle.0.to_radians().sin()
+                + modifier.radius * modifier.angle.0.to_radians().sin(),
         ),
         (
-            position.radius * position.angle.0.to_radians().cos()
-                + 1.5 * orientation.radius * orientation.angle.0.to_radians().cos(),
-            position.radius * position.angle.0.to_radians().sin()
-                + 1.5 * orientation.radius * orientation.angle.0.to_radians().sin(),
+            letter.radius * letter.angle.0.to_radians().cos()
+                + 1.5 * height.radius * height.angle.0.to_radians().cos()
+                + modifier.radius * modifier.angle.0.to_radians().cos(),
+            letter.radius * letter.angle.0.to_radians().sin()
+                + 1.5 * height.radius * height.angle.0.to_radians().sin()
+                + modifier.radius * modifier.angle.0.to_radians().sin(),
         ),
     ]
 }
