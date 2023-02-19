@@ -30,7 +30,7 @@ impl Base {
             ),
             Base::Crescent(letter, base) => arc3_d(
                 &letter,
-                &(base * &Polar::new(0.9, Degree(180.0))),
+                &(base * &Polar::new(0.9, Degree(0.0))),
                 base.radius(),
                 (
                     letter.angle() + Degree(30.0),
@@ -39,7 +39,7 @@ impl Base {
             ),
             Base::Full(letter, base) => arc3_d(
                 &letter,
-                &(base * &Polar::new(1.2, Degree(180.0))),
+                &(base * &Polar::new(1.2, Degree(0.0))),
                 base.radius(),
                 (Degree(0.0), Degree(360.0)),
             ),
@@ -103,66 +103,295 @@ impl Base {
 }
 
 pub enum Modifier {
-    Blank(Polar, Polar),
-    Dot1(Polar, Polar),
-    Dot2(Polar, Polar),
-    Dot3(Polar, Polar),
-    Dot4(Polar, Polar),
-    Line1(Polar, Polar, Degree),
-    Line2(Polar, Polar),
-    Line3(Polar, Polar),
+    Blank(Base),
+    Dot1(Base),
+    Dot2(Base),
+    Dot3(Base),
+    Dot4(Base),
+    Line1(Base, Degree),
+    Line2(Base),
+    Line3(Base),
 }
 
 impl Modifier {
-    pub fn to_points(&self) -> Vec<Vec<(f32, f32)>> {
+    pub fn base(&self) -> &Base {
         match self {
-            Modifier::Dot1(position) => {
-                vec![dot(&position, position / &Polar::new(3.0, Degree(180.0)))]
-            }
-            Modifier::Dot2(position) => vec![
-                dot(&position, position / &Polar::new(3.0, Degree(135.0))),
-                dot(&position, position / &Polar::new(3.0, Degree(225.0))),
-            ],
-            Modifier::Dot3(position) => vec![
-                dot(&position, position / &Polar::new(3.0, Degree(135.0))),
-                dot(&position, position / &Polar::new(3.0, Degree(180.0))),
-                dot(&position, position / &Polar::new(3.0, Degree(225.0))),
-            ],
-            Modifier::Dot4(position) => vec![
-                dot(&position, position / &Polar::new(3.0, Degree(150.0))),
-                dot(&position, position / &Polar::new(3.0, Degree(165.0))),
-                dot(&position, position / &Polar::new(3.0, Degree(195.0))),
-                dot(&position, position / &Polar::new(3.0, Degree(210.0))),
-            ],
-            Modifier::Line1(position, orientation) => vec![normal_line(
-                &position,
-                Polar::new(position.radius(), &position.angle() + &orientation),
-            )],
-            Modifier::Line2(position) => vec![
-                normal_line(&position, position / &Polar::new(3.0, Degree(135.0))),
-                normal_line(&position, position / &Polar::new(3.0, Degree(225.0))),
-            ],
-            Modifier::Line3(position) => vec![
-                normal_line(&position, position / &Polar::new(3.0, Degree(135.0))),
-                normal_line(&position, position / &Polar::new(3.0, Degree(180.0))),
-                normal_line(&position, position / &Polar::new(3.0, Degree(225.0))),
-            ],
+            Modifier::Blank(base_type) => base_type,
+            Modifier::Dot1(base_type) => base_type,
+            Modifier::Dot2(base_type) => base_type,
+            Modifier::Dot3(base_type) => base_type,
+            Modifier::Dot4(base_type) => base_type,
+            Modifier::Line1(base_type, _) => base_type,
+            Modifier::Line2(base_type) => base_type,
+            Modifier::Line3(base_type) => base_type,
         }
     }
-}
 
-pub struct Letter {
-    base: Base,
-    modifiers: Option<Modifier>,
-}
-
-impl Letter {
-    pub fn base(&self) -> &Base {
-        &self.base
-    }
-
-    pub fn modifier(&self) -> Option<&Modifier> {
-        self.modifiers.as_ref()
+    pub fn to_points(&self) -> Vec<Vec<(f32, f32)>> {
+        match self {
+            Modifier::Dot1(base_type) => match base_type {
+                Base::Crescent(letter, base) => vec![dot(
+                    letter,
+                    &(base * &Polar::new(1.1, Degree(0.0))),
+                    &(base * &Polar::new(1.0, Degree(0.0))),
+                )],
+                Base::Full(letter, base) => vec![dot(
+                    letter,
+                    &(base * &Polar::new(1.4, Degree(0.0))),
+                    &(base * &Polar::new(1.0, Degree(0.0))),
+                )],
+                Base::Quarter(letter, base) => vec![dot(
+                    letter,
+                    &(base * &Polar::new(0.2, Degree(0.0))),
+                    &(base * &Polar::new(1.0, Degree(0.0))),
+                )],
+                Base::New(letter, base) => vec![dot(
+                    letter,
+                    &(base * &Polar::new(0.2, Degree(0.0))),
+                    &(base * &Polar::new(1.0, Degree(0.0))),
+                )],
+                _ => todo!("Vowel"),
+            },
+            Modifier::Dot2(base_type) => match base_type {
+                Base::Crescent(letter, base) => vec![-45.0, 45.0]
+                    .into_iter()
+                    .map(|angle| {
+                        dot(
+                            letter,
+                            &(base * &Polar::new(1.1, Degree(0.0))),
+                            &(base * &Polar::new(1.0, Degree(angle))),
+                        )
+                    })
+                    .collect(),
+                Base::Full(letter, base) => vec![-45.0, 45.0]
+                    .into_iter()
+                    .map(|angle| {
+                        dot(
+                            letter,
+                            &(base * &Polar::new(1.4, Degree(0.0))),
+                            &(base * &Polar::new(1.0, Degree(angle))),
+                        )
+                    })
+                    .collect(),
+                Base::Quarter(letter, base) => vec![-45.0, 45.0]
+                    .into_iter()
+                    .map(|angle| {
+                        dot(
+                            letter,
+                            &(base * &Polar::new(0.2, Degree(0.0))),
+                            &(base * &Polar::new(1.0, Degree(angle))),
+                        )
+                    })
+                    .collect(),
+                Base::New(letter, base) => vec![-45.0, 45.0]
+                    .into_iter()
+                    .map(|angle| {
+                        dot(
+                            letter,
+                            &(base * &Polar::new(0.2, Degree(0.0))),
+                            &(base * &Polar::new(1.0, Degree(angle))),
+                        )
+                    })
+                    .collect(),
+                _ => todo!("Vowel"),
+            },
+            Modifier::Dot3(base_type) => match base_type {
+                Base::Crescent(letter, base) => vec![-45.0, 0.0, 45.0]
+                    .into_iter()
+                    .map(|angle| {
+                        dot(
+                            letter,
+                            &(base * &Polar::new(1.1, Degree(0.0))),
+                            &(base * &Polar::new(1.0, Degree(angle))),
+                        )
+                    })
+                    .collect(),
+                Base::Full(letter, base) => vec![-45.0, 0.0, 45.0]
+                    .into_iter()
+                    .map(|angle| {
+                        dot(
+                            letter,
+                            &(base * &Polar::new(1.4, Degree(0.0))),
+                            &(base * &Polar::new(1.0, Degree(angle))),
+                        )
+                    })
+                    .collect(),
+                Base::Quarter(letter, base) => vec![-45.0, 0.0, 45.0]
+                    .into_iter()
+                    .map(|angle| {
+                        dot(
+                            letter,
+                            &(base * &Polar::new(0.2, Degree(0.0))),
+                            &(base * &Polar::new(1.0, Degree(angle))),
+                        )
+                    })
+                    .collect(),
+                Base::New(letter, base) => vec![-45.0, 0.0, 45.0]
+                    .into_iter()
+                    .map(|angle| {
+                        dot(
+                            letter,
+                            &(base * &Polar::new(0.2, Degree(0.0))),
+                            &(base * &Polar::new(1.0, Degree(angle))),
+                        )
+                    })
+                    .collect(),
+                _ => todo!("Vowel"),
+            },
+            Modifier::Dot4(base_type) => match base_type {
+                Base::Crescent(letter, base) => vec![-30.0, -15.0, 15.0, 30.0]
+                    .into_iter()
+                    .map(|angle| {
+                        dot(
+                            letter,
+                            &(base * &Polar::new(1.1, Degree(0.0))),
+                            &(base * &Polar::new(1.0, Degree(angle))),
+                        )
+                    })
+                    .collect(),
+                Base::Full(letter, base) => vec![-30.0, -15.0, 15.0, 30.0]
+                    .into_iter()
+                    .map(|angle| {
+                        dot(
+                            letter,
+                            &(base * &Polar::new(1.4, Degree(0.0))),
+                            &(base * &Polar::new(1.0, Degree(angle))),
+                        )
+                    })
+                    .collect(),
+                Base::Quarter(letter, base) => vec![-30.0, -15.0, 15.0, 30.0]
+                    .into_iter()
+                    .map(|angle| {
+                        dot(
+                            letter,
+                            &(base * &Polar::new(0.2, Degree(0.0))),
+                            &(base * &Polar::new(1.0, Degree(angle))),
+                        )
+                    })
+                    .collect(),
+                Base::New(letter, base) => vec![-30.0, -15.0, 15.0, 30.0]
+                    .into_iter()
+                    .map(|angle| {
+                        dot(
+                            letter,
+                            &(base * &Polar::new(0.2, Degree(0.0))),
+                            &(base * &Polar::new(1.0, Degree(angle))),
+                        )
+                    })
+                    .collect(),
+                _ => todo!("Vowel"),
+            },
+            Modifier::Line1(base_type, angle) => match base_type {
+                Base::Crescent(letter, base) => vec![normal_line(
+                    letter,
+                    &(base * &Polar::new(0.9, Degree(0.0))),
+                    &(base * &Polar::new(1.0, *angle)),
+                )],
+                Base::Full(letter, base) => vec![normal_line(
+                    letter,
+                    &(base * &Polar::new(1.2, Degree(0.0))),
+                    &(base * &Polar::new(1.0, *angle)),
+                )],
+                Base::Quarter(letter, base) => vec![normal_line(
+                    letter,
+                    &(base * &Polar::new(0.0, Degree(0.0))),
+                    &(base * &Polar::new(1.0, *angle)),
+                )],
+                Base::New(letter, base) => vec![normal_line(
+                    letter,
+                    &(base * &Polar::new(0.0, Degree(0.0))),
+                    &(base * &Polar::new(1.0, *angle)),
+                )],
+                _ => todo!("Vowel"),
+            },
+            Modifier::Line2(base_type) => match base_type {
+                Base::Crescent(letter, base) =>  vec![-45.0, 45.0]
+                    .into_iter()
+                    .map(|angle| {
+                        normal_line(
+                            letter,
+                            &(base * &Polar::new(0.9, Degree(0.0))),
+                            &(base * &Polar::new(1.0, Degree(angle))),
+                        )
+                    })
+                    .collect(),
+                Base::Full(letter, base) =>  vec![-45.0, 45.0]
+                    .into_iter()
+                    .map(|angle| {
+                        normal_line(
+                            letter,
+                            &(base * &Polar::new(1.2, Degree(0.0))),
+                            &(base * &Polar::new(1.0, Degree(angle))),
+                        )
+                    })
+                    .collect(),
+                Base::Quarter(letter, base) =>  vec![-45.0, 45.0]
+                    .into_iter()
+                    .map(|angle| {
+                        normal_line(
+                            letter,
+                            &(base * &Polar::new(0.0, Degree(0.0))),
+                            &(base * &Polar::new(1.0, Degree(angle))),
+                        )
+                    })
+                    .collect(),
+                Base::New(letter, base) => vec![-45.0, 45.0]
+                    .into_iter()
+                    .map(|angle| {
+                        normal_line(
+                            letter,
+                            &(base * &Polar::new(0.0, Degree(0.0))),
+                            &(base * &Polar::new(1.0, Degree(angle))),
+                        )
+                    })
+                    .collect(),
+                _ => todo!("Vowel"),
+            },
+            Modifier::Line3(base_type) => match base_type {
+                Base::Crescent(letter, base) =>  vec![-45.0, 0.0, 45.0]
+                    .into_iter()
+                    .map(|angle| {
+                        normal_line(
+                            letter,
+                            &(base * &Polar::new(0.9, Degree(0.0))),
+                            &(base * &Polar::new(1.0, Degree(angle))),
+                        )
+                    })
+                    .collect(),
+                Base::Full(letter, base) =>  vec![-45.0, 0.0, 45.0]
+                    .into_iter()
+                    .map(|angle| {
+                        normal_line(
+                            letter,
+                            &(base * &Polar::new(1.2, Degree(0.0))),
+                            &(base * &Polar::new(1.0, Degree(angle))),
+                        )
+                    })
+                    .collect(),
+                Base::Quarter(letter, base) =>  vec![-45.0, 0.0, 45.0]
+                    .into_iter()
+                    .map(|angle| {
+                        normal_line(
+                            letter,
+                            &(base * &Polar::new(0.0, Degree(0.0))),
+                            &(base * &Polar::new(1.0, Degree(angle))),
+                        )
+                    })
+                    .collect(),
+                Base::New(letter, base) => vec![-45.0, 0.0, 45.0]
+                    .into_iter()
+                    .map(|angle| {
+                        normal_line(
+                            letter,
+                            &(base * &Polar::new(0.0, Degree(0.0))),
+                            &(base * &Polar::new(1.0, Degree(angle))),
+                        )
+                    })
+                    .collect(),
+                _ => todo!("Vowel"),
+            },
+            _ => todo!(""),
+        }
     }
 }
 
@@ -211,7 +440,7 @@ impl PartialEq for GallifreyanLetter {
 }
 
 impl GallifreyanLetter {
-    pub fn letter(&self) -> Letter {
+    pub fn letter(&self) -> Modifier {
         match self {
             GallifreyanLetter::A(position) => todo!(""),
             GallifreyanLetter::E(position) => todo!(""),
@@ -219,34 +448,109 @@ impl GallifreyanLetter {
             GallifreyanLetter::O(position) => todo!(""),
             GallifreyanLetter::U(position) => todo!(""),
             GallifreyanLetter::B(position) => todo!(""),
-            GallifreyanLetter::CH(position) => todo!(""),
-            GallifreyanLetter::D(position) => todo!(""),
-            GallifreyanLetter::G(position) => todo!(""),
-            GallifreyanLetter::H(position) => todo!(""),
-            GallifreyanLetter::F(position) => todo!(""),
+            GallifreyanLetter::CH(position) => Modifier::Dot2(Base::Crescent(
+                *position,
+                *position / Polar::new(3.0, Degree(180.0)),
+            )),
+            GallifreyanLetter::D(position) => Modifier::Dot3(Base::Crescent(
+                *position,
+                *position / Polar::new(3.0, Degree(180.0)),
+            )),
+            GallifreyanLetter::G(position) => Modifier::Line1(
+                Base::Crescent(*position, *position / Polar::new(3.0, Degree(180.0))),
+                Degree(0.0),
+            ),
+            GallifreyanLetter::H(position) => Modifier::Line2(Base::Crescent(
+                *position,
+                *position / Polar::new(3.0, Degree(180.0)),
+            )),
+            GallifreyanLetter::F(position) => Modifier::Line3(Base::Crescent(
+                *position,
+                *position / Polar::new(3.0, Degree(180.0)),
+            )),
             GallifreyanLetter::J(position) => todo!(""),
-            GallifreyanLetter::PH(position) => todo!(""),
-            GallifreyanLetter::K(position) => todo!(""),
-            GallifreyanLetter::L(position) => todo!(""),
-            GallifreyanLetter::C(position) => todo!(""),
-            GallifreyanLetter::N(position) => todo!(""),
-            GallifreyanLetter::P(position) => todo!(""),
-            GallifreyanLetter::M(position) => todo!(""),
+            GallifreyanLetter::PH(position) => Modifier::Dot1(Base::Full(
+                *position,
+                *position / Polar::new(3.0, Degree(180.0)),
+            )),
+            GallifreyanLetter::K(position) => Modifier::Dot2(Base::Full(
+                *position,
+                *position / Polar::new(3.0, Degree(180.0)),
+            )),
+            GallifreyanLetter::L(position) => Modifier::Dot3(Base::Full(
+                *position,
+                *position / Polar::new(3.0, Degree(180.0)),
+            )),
+            GallifreyanLetter::C(position) => Modifier::Dot4(Base::Full(
+                *position,
+                *position / Polar::new(3.0, Degree(180.0)),
+            )),
+            GallifreyanLetter::N(position) => Modifier::Line1(
+                Base::Full(*position, *position / Polar::new(3.0, Degree(180.0))),
+                Degree(0.0),
+            ),
+            GallifreyanLetter::P(position) => Modifier::Line2(Base::Full(
+                *position,
+                *position / Polar::new(3.0, Degree(180.0)),
+            )),
+            GallifreyanLetter::M(position) => Modifier::Line3(Base::Full(
+                *position,
+                *position / Polar::new(3.0, Degree(180.0)),
+            )),
             GallifreyanLetter::T(position) => todo!(""),
-            GallifreyanLetter::WH(position) => todo!(""),
-            GallifreyanLetter::SH(position) => todo!(""),
-            GallifreyanLetter::R(position) => todo!(""),
-            GallifreyanLetter::V(position) => todo!(""),
-            GallifreyanLetter::W(position) => todo!(""),
-            GallifreyanLetter::S(position) => todo!(""),
+            GallifreyanLetter::WH(position) => Modifier::Dot1(Base::Quarter(
+                *position,
+                *position / Polar::new(3.0, Degree(180.0)),
+            )),
+            GallifreyanLetter::SH(position) => Modifier::Dot2(Base::Quarter(
+                *position,
+                *position / Polar::new(3.0, Degree(180.0)),
+            )),
+            GallifreyanLetter::R(position) => Modifier::Dot3(Base::Quarter(
+                *position,
+                *position / Polar::new(3.0, Degree(180.0)),
+            )),
+            GallifreyanLetter::V(position) => Modifier::Line1(
+                Base::Quarter(*position, *position / Polar::new(3.0, Degree(180.0))),
+                Degree(0.0),
+            ),
+            GallifreyanLetter::W(position) => Modifier::Line2(Base::Quarter(
+                *position,
+                *position / Polar::new(3.0, Degree(180.0)),
+            )),
+            GallifreyanLetter::S(position) => Modifier::Line3(Base::Quarter(
+                *position,
+                *position / Polar::new(3.0, Degree(180.0)),
+            )),
             GallifreyanLetter::TH(position) => todo!(""),
-            GallifreyanLetter::GH(position) => todo!(""),
-            GallifreyanLetter::Y(position) => todo!(""),
-            GallifreyanLetter::Z(position) => todo!(""),
-            GallifreyanLetter::Q(position) => todo!(""),
-            GallifreyanLetter::QU(position) => todo!(""),
-            GallifreyanLetter::X(position) => todo!(""),
-            GallifreyanLetter::NG(position) => todo!(""),
+            GallifreyanLetter::GH(position) => Modifier::Dot1(Base::New(
+                *position,
+                *position / Polar::new(3.0, Degree(180.0)),
+            )),
+            GallifreyanLetter::Y(position) => Modifier::Dot2(Base::New(
+                *position,
+                *position / Polar::new(3.0, Degree(180.0)),
+            )),
+            GallifreyanLetter::Z(position) => Modifier::Dot3(Base::New(
+                *position,
+                *position / Polar::new(3.0, Degree(180.0)),
+            )),
+            GallifreyanLetter::Q(position) => Modifier::Dot4(Base::New(
+                *position,
+                *position / Polar::new(3.0, Degree(180.0)),
+            )),
+            GallifreyanLetter::QU(position) => Modifier::Line1(
+                Base::New(*position, *position / Polar::new(3.0, Degree(180.0))),
+                Degree(0.0),
+            ),
+            GallifreyanLetter::X(position) => Modifier::Line2(Base::New(
+                *position,
+                *position / Polar::new(3.0, Degree(180.0)),
+            )),
+            GallifreyanLetter::NG(position) => Modifier::Line3(Base::New(
+                *position,
+                *position / Polar::new(3.0, Degree(180.0)),
+            )),
         }
     }
 
@@ -262,6 +566,7 @@ impl GallifreyanLetter {
         )
     }
 
+    /*
     pub fn buffer(&self, next: GallifreyanLetter) -> Option<Vec<(f32, f32)>> {
         if self.is_vowel() || next.is_vowel() {
             return None;
@@ -285,4 +590,5 @@ impl GallifreyanLetter {
             (edge1, edge2),
         ))
     }
+    */
 }

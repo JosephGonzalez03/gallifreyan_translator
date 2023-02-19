@@ -146,11 +146,11 @@ pub fn normal_line(letter: &Polar, height: &Polar, modifier: &Polar) -> Vec<(f32
         ),
         (
             letter.radius * letter.angle.0.to_radians().cos()
-                + 1.5 * height.radius * height.angle.0.to_radians().cos()
-                + modifier.radius * modifier.angle.0.to_radians().cos(),
+                + height.radius * height.angle.0.to_radians().cos()
+                + 1.5 * modifier.radius * modifier.angle.0.to_radians().cos(),
             letter.radius * letter.angle.0.to_radians().sin()
-                + 1.5 * height.radius * height.angle.0.to_radians().sin()
-                + modifier.radius * modifier.angle.0.to_radians().sin(),
+                + height.radius * height.angle.0.to_radians().sin()
+                + 1.5 * modifier.radius * modifier.angle.0.to_radians().sin(),
         ),
     ]
 }
