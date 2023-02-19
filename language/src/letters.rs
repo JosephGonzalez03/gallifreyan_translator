@@ -2,10 +2,6 @@ use crate::letter_parts::*;
 use crate::math_util::{Degree, Polar};
 use std::mem::discriminant;
 
-const CRESCENT_HEIGHT: f32 = 0.9;
-const FULL_HEIGHT: f32 = 1.2;
-const DEFAULT_BASE_HEIGHT: f32 = 0.0;
-
 pub struct LetterParts {
     base: Base,
     modifiers: Option<Modifier>,
