@@ -130,6 +130,24 @@ impl FromIterator<(f32, f32)> for Drawing {
         drawing
     }
 }
+
+pub fn arc(radius: f32, range: (Degree, Degree)) -> Drawing {
+    let start_range = range.0 .0.round() as i32;
+    let end_range = range.1 .0.round() as i32;
+
+    match start_range < end_range {
+        true => (start_range..=end_range),
+        false => (start_range..=end_range + 360),
+    }
+    .map(|angle| {
+        (
+            radius * (angle as f32).to_radians().cos(),
+            radius * (angle as f32).to_radians().sin()
+        )
+    })
+    .collect::<Drawing>()
+}
+
 pub fn arc3_d(letter: &Polar, height: &Polar, size: f32, range: (Degree, Degree)) -> Drawing {
     let start_range = range.0 .0.round() as i32;
     let end_range = range.1 .0.round() as i32;

@@ -1,3 +1,5 @@
+use std::mem::discriminant;
+
 use crate::math_util::*;
 
 pub const CRESCENT_HEIGHT: f32 = 0.9;
@@ -44,8 +46,14 @@ pub enum Base {
     New(Polar, Polar),
 }
 
+impl PartialEq for Base {
+    fn eq(&self, other: &Self) -> bool {
+        discriminant(self) == discriminant(other)
+    }
+}
+
 impl Base {
-    fn position(&self) -> &Polar {
+    pub fn position(&self) -> &Polar {
         match self {
             Base::Vowel(position, _) => position,
             Base::Crescent(position, _) => position,
@@ -65,7 +73,7 @@ impl Base {
             ),
             Base::Crescent(letter, base) => arc3_d(
                 &letter,
-                &(base * &Polar::new(CRESCENT_HEIGHT, Degree(0.0))),
+                &(base * &Polar::new(CRESCENT_HEIGHT, Degree(180.0))),
                 base.radius(),
                 (
                     letter.angle() + Degree(30.0),
@@ -98,19 +106,19 @@ impl Base {
 
     fn starting_angle(&self) -> Option<Degree> {
         match self {
-            Base::Crescent(position, _) => Some(
-                law_of_sines_angle(
-                    &position.radius(),
-                    &(&position.radius() / 3.0),
+            Base::Crescent(letter, base) => Some(
+                letter.angle() + law_of_sines_angle(
+                    &letter.radius(),
+                    &base.radius(),
                     Degree(30.0),
-                ) + position.angle(),
+                ),
             ),
-            Base::Quarter(position, _) => Some(
-                law_of_sines_angle(
-                    &position.radius(),
-                    &(&position.radius() / 3.0),
+            Base::Quarter(letter, base) => Some(
+                letter.angle() + law_of_sines_angle(
+                    &letter.radius(),
+                    &base.radius(),
                     Degree(90.0),
-                ) + position.angle(),
+                )
             ),
             _ => None,
         }
@@ -118,22 +126,48 @@ impl Base {
 
     fn ending_angle(&self) -> Option<Degree> {
         match self {
-            Base::Crescent(position, _) => Some(
-                law_of_sines_angle(
-                    &position.radius(),
-                    &(&position.radius() / 3.0),
-                    Degree(-30.0),
-                ) + position.angle(),
+            Base::Crescent(letter, base) => Some(
+                letter.angle() - law_of_sines_angle(
+                    &letter.radius(),
+                    &base.radius(),
+                    Degree(30.0),
+                ),
             ),
-            Base::Quarter(position, _) => Some(
-                law_of_sines_angle(
-                    &position.radius(),
-                    &(&position.radius() / 3.0),
-                    Degree(-90.0),
-                ) + position.angle(),
+            Base::Quarter(letter, base) => Some(
+                letter.angle() - law_of_sines_angle(
+                    &letter.radius(),
+                    &base.radius(),
+                    Degree(90.0),
+                )
             ),
             _ => None,
         }
+    }
+
+    fn has_edge(&self) -> bool {
+        match self {
+            Base::Crescent(_, _) |
+            Base::Quarter(_, _) => true,
+            _ => false,
+        }
+    }
+
+    pub fn buffer(&self, next: &Base) -> Option<Drawing> {
+        if !self.has_edge() || !next.has_edge() {
+            return None
+        }
+
+        let edge1 = self
+            .ending_angle()
+            .expect("There is an early return for bases that don't have edges.");
+        let edge2 = next
+            .starting_angle()
+            .expect("There is an early return for bases that don't have edges.");
+
+        Some(arc(
+            self.position().radius(),
+            (edge1, edge2)
+        ))
     }
 }
 

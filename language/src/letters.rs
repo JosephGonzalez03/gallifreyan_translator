@@ -1,5 +1,5 @@
 use crate::letter_parts::*;
-use crate::math_util::{Degree, Polar};
+use crate::math_util::{Degree, Polar, Drawing, arc3_d};
 use std::mem::discriminant;
 
 pub struct LetterParts {
@@ -220,30 +220,4 @@ impl GallifreyanLetter {
                 | GallifreyanLetter::U(_position)
         )
     }
-
-    /*
-    pub fn buffer(&self, next: GallifreyanLetter) -> Option<Vec<(f32, f32)>> {
-        if self.is_vowel() || next.is_vowel() {
-            return None;
-        }
-
-        let edge1 = self
-            .letter()
-            .base()
-            .ending_angle()
-            .expect("Vowels don't have a letter part with an edge. There is an early return if self is a vowel.");
-        let edge2 = next
-            .letter()
-            .base()
-            .starting_angle()
-            .expect("Vowels don't have a letter part with an edge. There is an early return if self is a vowel.");
-
-        Some(arc3_d(
-            self.letter().base().position(),
-            &Polar::new(0.0, Degree(0.0)),
-            0.0,
-            (edge1, edge2),
-        ))
-    }
-    */
 }
