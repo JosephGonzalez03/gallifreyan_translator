@@ -1,5 +1,5 @@
-use crate::math_util::*;
 use crate::letter_parts::*;
+use crate::math_util::{Degree, Polar};
 use std::mem::discriminant;
 
 /// An enumeration for the letters in the Gallifreyan alphabet.

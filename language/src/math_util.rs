@@ -13,6 +13,12 @@ impl Degree {
     }
 }
 
+impl From<f32> for Degree {
+    fn from(value: f32) -> Self {
+        Self(value)
+    }
+}
+
 impl Add for Degree {
     type Output = Self;
 
@@ -97,12 +103,34 @@ impl Div for &Polar {
     }
 }
 
-pub fn arc3_d(
-    letter: &Polar,
-    height: &Polar,
-    size: f32,
-    range: (Degree, Degree),
-) -> Vec<(f32, f32)> {
+pub struct Drawing(Vec<(f32, f32)>);
+
+impl Drawing {
+    fn new() -> Self {
+        Self(Vec::new())
+    }
+
+    fn push(&mut self, value: (f32, f32)) {
+        self.0.push(value);
+    }
+
+    pub fn to_points(&self) -> &Vec<(f32, f32)> {
+        &self.0
+    }
+}
+
+impl FromIterator<(f32, f32)> for Drawing {
+    fn from_iter<T: IntoIterator<Item = (f32, f32)>>(iter: T) -> Self {
+        let mut drawing = Drawing::new();
+
+        for i in iter {
+            drawing.push(i)
+        }
+
+        drawing
+    }
+}
+pub fn arc3_d(letter: &Polar, height: &Polar, size: f32, range: (Degree, Degree)) -> Drawing {
     let start_range = range.0 .0.round() as i32;
     let end_range = range.1 .0.round() as i32;
 
@@ -120,22 +148,22 @@ pub fn arc3_d(
                 + size * (angle as f32).to_radians().sin(),
         )
     })
-    .collect::<Vec<(f32, f32)>>()
+    .collect::<Drawing>()
 }
 
-pub fn dot(letter: &Polar, height: &Polar, modifier: &Polar) -> Vec<(f32, f32)> {
-    vec![(
+pub fn dot(letter: &Polar, height: &Polar, modifier: &Polar) -> Drawing {
+    Drawing(vec![(
         letter.radius * letter.angle.0.to_radians().cos()
             + height.radius * height.angle.0.to_radians().cos()
             + modifier.radius * modifier.angle.0.to_radians().cos(),
         letter.radius * letter.angle.0.to_radians().sin()
             + height.radius * height.angle.0.to_radians().sin()
             + modifier.radius * modifier.angle.0.to_radians().sin(),
-    )]
+    )])
 }
 
-pub fn normal_line(letter: &Polar, height: &Polar, modifier: &Polar) -> Vec<(f32, f32)> {
-    vec![
+pub fn normal_line(letter: &Polar, height: &Polar, modifier: &Polar) -> Drawing {
+    Drawing(vec![
         (
             letter.radius * letter.angle.0.to_radians().cos()
                 + height.radius * height.angle.0.to_radians().cos()
@@ -152,7 +180,7 @@ pub fn normal_line(letter: &Polar, height: &Polar, modifier: &Polar) -> Vec<(f32
                 + height.radius * height.angle.0.to_radians().sin()
                 + 1.5 * modifier.radius * modifier.angle.0.to_radians().sin(),
         ),
-    ]
+    ])
 }
 
 pub fn law_of_sines_angle(side_a: &f32, side_b: &f32, angle_b: Degree) -> Degree {

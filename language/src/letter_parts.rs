@@ -1,3 +1,41 @@
+use crate::math_util::*;
+
+const CRESCENT_HEIGHT: f32 = 0.9;
+const FULL_HEIGHT: f32 = 1.2;
+const DEFAULT_BASE_HEIGHT: f32 = 0.0;
+const DOT_OFFSET_HEIGHT: f32 = 0.2;
+
+fn draw_dots(letter: &Polar, base: &Polar, base_height: f32, angles: Vec<Degree>) -> Vec<Drawing> {
+    angles
+        .into_iter()
+        .map(|angle| {
+            dot(
+                letter,
+                &(base * &Polar::new(base_height + DOT_OFFSET_HEIGHT, Degree(0.0))),
+                &(base * &Polar::new(1.0, angle)),
+            )
+        })
+        .collect()
+}
+
+fn draw_normal_lines(
+    letter: &Polar,
+    base: &Polar,
+    base_height: f32,
+    angles: Vec<Degree>,
+) -> Vec<Drawing> {
+    angles
+        .into_iter()
+        .map(|angle| {
+            normal_line(
+                letter,
+                &(base * &Polar::new(base_height + DOT_OFFSET_HEIGHT, Degree(0.0))),
+                &(base * &Polar::new(1.0, angle)),
+            )
+        })
+        .collect()
+}
+
 pub enum Base {
     Vowel(Polar, Polar),
     Crescent(Polar, Polar),
@@ -17,7 +55,7 @@ impl Base {
         }
     }
 
-    pub fn to_points(&self) -> Vec<(f32, f32)> {
+    pub fn to_drawing(&self) -> Drawing {
         match self {
             Base::Vowel(position, vowel_position) => arc3_d(
                 &position,
@@ -27,7 +65,7 @@ impl Base {
             ),
             Base::Crescent(letter, base) => arc3_d(
                 &letter,
-                &(base * &Polar::new(0.9, Degree(0.0))),
+                &(base * &Polar::new(CRESCENT_HEIGHT, Degree(0.0))),
                 base.radius(),
                 (
                     letter.angle() + Degree(30.0),
@@ -36,13 +74,13 @@ impl Base {
             ),
             Base::Full(letter, base) => arc3_d(
                 &letter,
-                &(base * &Polar::new(1.2, Degree(0.0))),
+                &(base * &Polar::new(FULL_HEIGHT, Degree(0.0))),
                 base.radius(),
                 (Degree(0.0), Degree(360.0)),
             ),
             Base::Quarter(letter, base) => arc3_d(
                 &letter,
-                &Polar::new(0.0, Degree(180.0)),
+                &Polar::new(DEFAULT_BASE_HEIGHT, Degree(180.0)),
                 base.radius(),
                 (
                     letter.angle() + Degree(95.0),
@@ -51,7 +89,7 @@ impl Base {
             ),
             Base::New(letter, base) => arc3_d(
                 &letter,
-                &Polar::new(0.0, Degree(0.0)),
+                &Polar::new(DEFAULT_BASE_HEIGHT, Degree(0.0)),
                 base.radius(),
                 (letter.angle() + Degree(0.0), letter.angle() + Degree(360.0)),
             ),
@@ -124,271 +162,166 @@ impl Modifier {
         }
     }
 
-    pub fn to_points(&self) -> Vec<Vec<(f32, f32)>> {
+    pub fn to_drawings(&self) -> Vec<Drawing> {
         match self {
             Modifier::Dot1(base_type) => match base_type {
-                Base::Crescent(letter, base) => vec![dot(
-                    letter,
-                    &(base * &Polar::new(1.1, Degree(0.0))),
-                    &(base * &Polar::new(1.0, Degree(0.0))),
-                )],
-                Base::Full(letter, base) => vec![dot(
-                    letter,
-                    &(base * &Polar::new(1.4, Degree(0.0))),
-                    &(base * &Polar::new(1.0, Degree(0.0))),
-                )],
-                Base::Quarter(letter, base) => vec![dot(
-                    letter,
-                    &(base * &Polar::new(0.2, Degree(0.0))),
-                    &(base * &Polar::new(1.0, Degree(0.0))),
-                )],
-                Base::New(letter, base) => vec![dot(
-                    letter,
-                    &(base * &Polar::new(0.2, Degree(0.0))),
-                    &(base * &Polar::new(1.0, Degree(0.0))),
-                )],
+                Base::Crescent(letter, base) => {
+                    draw_dots(letter, base, CRESCENT_HEIGHT, vec![Degree(0.0)])
+                }
+                Base::Full(letter, base) => draw_dots(letter, base, FULL_HEIGHT, vec![Degree(0.0)]),
+                Base::Quarter(letter, base) => {
+                    draw_dots(letter, base, DEFAULT_BASE_HEIGHT, vec![Degree(0.0)])
+                }
+                Base::New(letter, base) => {
+                    draw_dots(letter, base, DEFAULT_BASE_HEIGHT, vec![Degree(0.0)])
+                }
                 _ => todo!("Vowel"),
             },
             Modifier::Dot2(base_type) => match base_type {
-                Base::Crescent(letter, base) => vec![-45.0, 45.0]
-                    .into_iter()
-                    .map(|angle| {
-                        dot(
-                            letter,
-                            &(base * &Polar::new(1.1, Degree(0.0))),
-                            &(base * &Polar::new(1.0, Degree(angle))),
-                        )
-                    })
-                    .collect(),
-                Base::Full(letter, base) => vec![-45.0, 45.0]
-                    .into_iter()
-                    .map(|angle| {
-                        dot(
-                            letter,
-                            &(base * &Polar::new(1.4, Degree(0.0))),
-                            &(base * &Polar::new(1.0, Degree(angle))),
-                        )
-                    })
-                    .collect(),
-                Base::Quarter(letter, base) => vec![-45.0, 45.0]
-                    .into_iter()
-                    .map(|angle| {
-                        dot(
-                            letter,
-                            &(base * &Polar::new(0.2, Degree(0.0))),
-                            &(base * &Polar::new(1.0, Degree(angle))),
-                        )
-                    })
-                    .collect(),
-                Base::New(letter, base) => vec![-45.0, 45.0]
-                    .into_iter()
-                    .map(|angle| {
-                        dot(
-                            letter,
-                            &(base * &Polar::new(0.2, Degree(0.0))),
-                            &(base * &Polar::new(1.0, Degree(angle))),
-                        )
-                    })
-                    .collect(),
+                Base::Crescent(letter, base) => draw_dots(
+                    letter,
+                    base,
+                    CRESCENT_HEIGHT,
+                    vec![Degree(-45.0), Degree(45.0)],
+                ),
+                Base::Full(letter, base) => {
+                    draw_dots(letter, base, FULL_HEIGHT, vec![Degree(-45.0), Degree(45.0)])
+                }
+                Base::Quarter(letter, base) => draw_dots(
+                    letter,
+                    base,
+                    DEFAULT_BASE_HEIGHT,
+                    vec![Degree(-45.0), Degree(45.0)],
+                ),
+                Base::New(letter, base) => draw_dots(
+                    letter,
+                    base,
+                    DEFAULT_BASE_HEIGHT,
+                    vec![Degree(-45.0), Degree(45.0)],
+                ),
                 _ => todo!("Vowel"),
             },
             Modifier::Dot3(base_type) => match base_type {
-                Base::Crescent(letter, base) => vec![-45.0, 0.0, 45.0]
-                    .into_iter()
-                    .map(|angle| {
-                        dot(
-                            letter,
-                            &(base * &Polar::new(1.1, Degree(0.0))),
-                            &(base * &Polar::new(1.0, Degree(angle))),
-                        )
-                    })
-                    .collect(),
-                Base::Full(letter, base) => vec![-45.0, 0.0, 45.0]
-                    .into_iter()
-                    .map(|angle| {
-                        dot(
-                            letter,
-                            &(base * &Polar::new(1.4, Degree(0.0))),
-                            &(base * &Polar::new(1.0, Degree(angle))),
-                        )
-                    })
-                    .collect(),
-                Base::Quarter(letter, base) => vec![-45.0, 0.0, 45.0]
-                    .into_iter()
-                    .map(|angle| {
-                        dot(
-                            letter,
-                            &(base * &Polar::new(0.2, Degree(0.0))),
-                            &(base * &Polar::new(1.0, Degree(angle))),
-                        )
-                    })
-                    .collect(),
-                Base::New(letter, base) => vec![-45.0, 0.0, 45.0]
-                    .into_iter()
-                    .map(|angle| {
-                        dot(
-                            letter,
-                            &(base * &Polar::new(0.2, Degree(0.0))),
-                            &(base * &Polar::new(1.0, Degree(angle))),
-                        )
-                    })
-                    .collect(),
+                Base::Crescent(letter, base) => draw_dots(
+                    letter,
+                    base,
+                    CRESCENT_HEIGHT,
+                    vec![Degree(-45.0), Degree(0.0), Degree(45.0)],
+                ),
+                Base::Full(letter, base) => draw_dots(
+                    letter,
+                    base,
+                    FULL_HEIGHT,
+                    vec![Degree(-45.0), Degree(0.0), Degree(45.0)],
+                ),
+                Base::Quarter(letter, base) => draw_dots(
+                    letter,
+                    base,
+                    DEFAULT_BASE_HEIGHT,
+                    vec![Degree(-45.0), Degree(0.0), Degree(45.0)],
+                ),
+                Base::New(letter, base) => draw_dots(
+                    letter,
+                    base,
+                    DEFAULT_BASE_HEIGHT,
+                    vec![Degree(-45.0), Degree(0.0), Degree(45.0)],
+                ),
                 _ => todo!("Vowel"),
             },
             Modifier::Dot4(base_type) => match base_type {
-                Base::Crescent(letter, base) => vec![-30.0, -15.0, 15.0, 30.0]
-                    .into_iter()
-                    .map(|angle| {
-                        dot(
-                            letter,
-                            &(base * &Polar::new(1.1, Degree(0.0))),
-                            &(base * &Polar::new(1.0, Degree(angle))),
-                        )
-                    })
-                    .collect(),
-                Base::Full(letter, base) => vec![-30.0, -15.0, 15.0, 30.0]
-                    .into_iter()
-                    .map(|angle| {
-                        dot(
-                            letter,
-                            &(base * &Polar::new(1.4, Degree(0.0))),
-                            &(base * &Polar::new(1.0, Degree(angle))),
-                        )
-                    })
-                    .collect(),
-                Base::Quarter(letter, base) => vec![-30.0, -15.0, 15.0, 30.0]
-                    .into_iter()
-                    .map(|angle| {
-                        dot(
-                            letter,
-                            &(base * &Polar::new(0.2, Degree(0.0))),
-                            &(base * &Polar::new(1.0, Degree(angle))),
-                        )
-                    })
-                    .collect(),
-                Base::New(letter, base) => vec![-30.0, -15.0, 15.0, 30.0]
-                    .into_iter()
-                    .map(|angle| {
-                        dot(
-                            letter,
-                            &(base * &Polar::new(0.2, Degree(0.0))),
-                            &(base * &Polar::new(1.0, Degree(angle))),
-                        )
-                    })
-                    .collect(),
+                Base::Crescent(letter, base) => draw_dots(
+                    letter,
+                    base,
+                    CRESCENT_HEIGHT,
+                    vec![Degree(-30.0), Degree(-15.0), Degree(15.0), Degree(30.0)],
+                ),
+                Base::Full(letter, base) => draw_dots(
+                    letter,
+                    base,
+                    FULL_HEIGHT,
+                    vec![Degree(-30.0), Degree(-15.0), Degree(15.0), Degree(30.0)],
+                ),
+                Base::Quarter(letter, base) => draw_dots(
+                    letter,
+                    base,
+                    DEFAULT_BASE_HEIGHT,
+                    vec![Degree(-30.0), Degree(-15.0), Degree(15.0), Degree(30.0)],
+                ),
+                Base::New(letter, base) => draw_dots(
+                    letter,
+                    base,
+                    DEFAULT_BASE_HEIGHT,
+                    vec![Degree(-30.0), Degree(-15.0), Degree(15.0), Degree(30.0)],
+                ),
                 _ => todo!("Vowel"),
             },
             Modifier::Line1(base_type, angle) => match base_type {
-                Base::Crescent(letter, base) => vec![normal_line(
-                    letter,
-                    &(base * &Polar::new(0.9, Degree(0.0))),
-                    &(base * &Polar::new(1.0, *angle)),
-                )],
-                Base::Full(letter, base) => vec![normal_line(
-                    letter,
-                    &(base * &Polar::new(1.2, Degree(0.0))),
-                    &(base * &Polar::new(1.0, *angle)),
-                )],
-                Base::Quarter(letter, base) => vec![normal_line(
-                    letter,
-                    &(base * &Polar::new(0.0, Degree(0.0))),
-                    &(base * &Polar::new(1.0, *angle)),
-                )],
-                Base::New(letter, base) => vec![normal_line(
-                    letter,
-                    &(base * &Polar::new(0.0, Degree(0.0))),
-                    &(base * &Polar::new(1.0, *angle)),
-                )],
+                Base::Crescent(letter, base) => {
+                    draw_normal_lines(letter, base, CRESCENT_HEIGHT, vec![*angle])
+                }
+                Base::Full(letter, base) => {
+                    draw_normal_lines(letter, base, FULL_HEIGHT, vec![*angle])
+                }
+                Base::Quarter(letter, base) => {
+                    draw_normal_lines(letter, base, DEFAULT_BASE_HEIGHT, vec![*angle])
+                }
+                Base::New(letter, base) => {
+                    draw_normal_lines(letter, base, DEFAULT_BASE_HEIGHT, vec![*angle])
+                }
                 _ => todo!("Vowel"),
             },
             Modifier::Line2(base_type) => match base_type {
-                Base::Crescent(letter, base) =>  vec![-45.0, 45.0]
-                    .into_iter()
-                    .map(|angle| {
-                        normal_line(
-                            letter,
-                            &(base * &Polar::new(0.9, Degree(0.0))),
-                            &(base * &Polar::new(1.0, Degree(angle))),
-                        )
-                    })
-                    .collect(),
-                Base::Full(letter, base) =>  vec![-45.0, 45.0]
-                    .into_iter()
-                    .map(|angle| {
-                        normal_line(
-                            letter,
-                            &(base * &Polar::new(1.2, Degree(0.0))),
-                            &(base * &Polar::new(1.0, Degree(angle))),
-                        )
-                    })
-                    .collect(),
-                Base::Quarter(letter, base) =>  vec![-45.0, 45.0]
-                    .into_iter()
-                    .map(|angle| {
-                        normal_line(
-                            letter,
-                            &(base * &Polar::new(0.0, Degree(0.0))),
-                            &(base * &Polar::new(1.0, Degree(angle))),
-                        )
-                    })
-                    .collect(),
-                Base::New(letter, base) => vec![-45.0, 45.0]
-                    .into_iter()
-                    .map(|angle| {
-                        normal_line(
-                            letter,
-                            &(base * &Polar::new(0.0, Degree(0.0))),
-                            &(base * &Polar::new(1.0, Degree(angle))),
-                        )
-                    })
-                    .collect(),
+                Base::Crescent(letter, base) => draw_normal_lines(
+                    letter,
+                    base,
+                    CRESCENT_HEIGHT,
+                    vec![Degree(-45.0), Degree(45.0)],
+                ),
+                Base::Full(letter, base) => {
+                    draw_normal_lines(letter, base, FULL_HEIGHT, vec![Degree(-45.0), Degree(45.0)])
+                }
+                Base::Quarter(letter, base) => draw_normal_lines(
+                    letter,
+                    base,
+                    DEFAULT_BASE_HEIGHT,
+                    vec![Degree(-45.0), Degree(45.0)],
+                ),
+                Base::New(letter, base) => draw_normal_lines(
+                    letter,
+                    base,
+                    DEFAULT_BASE_HEIGHT,
+                    vec![Degree(-45.0), Degree(45.0)],
+                ),
                 _ => todo!("Vowel"),
             },
             Modifier::Line3(base_type) => match base_type {
-                Base::Crescent(letter, base) =>  vec![-45.0, 0.0, 45.0]
-                    .into_iter()
-                    .map(|angle| {
-                        normal_line(
-                            letter,
-                            &(base * &Polar::new(0.9, Degree(0.0))),
-                            &(base * &Polar::new(1.0, Degree(angle))),
-                        )
-                    })
-                    .collect(),
-                Base::Full(letter, base) =>  vec![-45.0, 0.0, 45.0]
-                    .into_iter()
-                    .map(|angle| {
-                        normal_line(
-                            letter,
-                            &(base * &Polar::new(1.2, Degree(0.0))),
-                            &(base * &Polar::new(1.0, Degree(angle))),
-                        )
-                    })
-                    .collect(),
-                Base::Quarter(letter, base) =>  vec![-45.0, 0.0, 45.0]
-                    .into_iter()
-                    .map(|angle| {
-                        normal_line(
-                            letter,
-                            &(base * &Polar::new(0.0, Degree(0.0))),
-                            &(base * &Polar::new(1.0, Degree(angle))),
-                        )
-                    })
-                    .collect(),
-                Base::New(letter, base) => vec![-45.0, 0.0, 45.0]
-                    .into_iter()
-                    .map(|angle| {
-                        normal_line(
-                            letter,
-                            &(base * &Polar::new(0.0, Degree(0.0))),
-                            &(base * &Polar::new(1.0, Degree(angle))),
-                        )
-                    })
-                    .collect(),
+                Base::Crescent(letter, base) => draw_normal_lines(
+                    letter,
+                    base,
+                    CRESCENT_HEIGHT,
+                    vec![Degree(-45.0), Degree(0.0), Degree(45.0)],
+                ),
+                Base::Full(letter, base) => draw_normal_lines(
+                    letter,
+                    base,
+                    FULL_HEIGHT,
+                    vec![Degree(-45.0), Degree(0.0), Degree(45.0)],
+                ),
+                Base::Quarter(letter, base) => draw_normal_lines(
+                    letter,
+                    base,
+                    DEFAULT_BASE_HEIGHT,
+                    vec![Degree(-45.0), Degree(0.0), Degree(45.0)],
+                ),
+                Base::New(letter, base) => draw_normal_lines(
+                    letter,
+                    base,
+                    DEFAULT_BASE_HEIGHT,
+                    vec![Degree(-45.0), Degree(0.0), Degree(45.0)],
+                ),
                 _ => todo!("Vowel"),
             },
             _ => todo!(""),
         }
     }
 }
-
