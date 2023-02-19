@@ -12,16 +12,24 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .build_cartesian_2d(-10f32..10f32, -10f32..10f32)?;
 
     chart.configure_mesh().draw()?;
-    let b = GallifreyanLetter::SH(Polar::new(6.0, Degree(0.0)));
+    let b = GallifreyanLetter::NG(Polar::new(6.0, Degree(0.0)));
     chart.draw_series(LineSeries::new(
         b.letter().base().to_drawing().to_points().to_vec(),
         GREEN,
     ))?;
-    b.letter().to_drawings().iter().for_each(|drawing| {
-        //chart.draw_series(LineSeries::new(part.to_vec(), GREEN));
-        chart
-            .draw_series(LineSeries::new(drawing.to_points().to_vec(), RED.filled()).point_size(2))
-            .unwrap();
-    });
+    b.letter()
+        .modifiers()
+        .as_ref()
+        .expect("")
+        .to_drawings()
+        .iter()
+        .for_each(|drawing| {
+            //chart.draw_series(LineSeries::new(part.to_vec(), GREEN));
+            chart
+                .draw_series(
+                    LineSeries::new(drawing.to_points().to_vec(), RED.filled()).point_size(2),
+                )
+                .unwrap();
+        });
     Ok(())
 }

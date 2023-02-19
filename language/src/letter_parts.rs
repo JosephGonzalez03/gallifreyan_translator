@@ -1,11 +1,11 @@
 use crate::math_util::*;
 
-const CRESCENT_HEIGHT: f32 = 0.9;
-const FULL_HEIGHT: f32 = 1.2;
-const DEFAULT_BASE_HEIGHT: f32 = 0.0;
+pub const CRESCENT_HEIGHT: f32 = 0.9;
+pub const FULL_HEIGHT: f32 = 1.2;
+pub const DEFAULT_BASE_HEIGHT: f32 = 0.0;
 const DOT_OFFSET_HEIGHT: f32 = 0.2;
 
-fn draw_dots(letter: &Polar, base: &Polar, base_height: f32, angles: Vec<Degree>) -> Vec<Drawing> {
+fn draw_dots(letter: &Polar, base: &Polar, base_height: &f32, angles: Vec<Degree>) -> Vec<Drawing> {
     angles
         .into_iter()
         .map(|angle| {
@@ -18,10 +18,10 @@ fn draw_dots(letter: &Polar, base: &Polar, base_height: f32, angles: Vec<Degree>
         .collect()
 }
 
-fn draw_normal_lines(
+fn draw_lines(
     letter: &Polar,
     base: &Polar,
-    base_height: f32,
+    base_height: &f32,
     angles: Vec<Degree>,
 ) -> Vec<Drawing> {
     angles
@@ -29,7 +29,7 @@ fn draw_normal_lines(
         .map(|angle| {
             normal_line(
                 letter,
-                &(base * &Polar::new(base_height + DOT_OFFSET_HEIGHT, Degree(0.0))),
+                &(base * &Polar::new(*base_height, Degree(0.0))),
                 &(base * &Polar::new(1.0, angle)),
             )
         })
@@ -138,190 +138,48 @@ impl Base {
 }
 
 pub enum Modifier {
-    Blank(Base),
-    Dot1(Base),
-    Dot2(Base),
-    Dot3(Base),
-    Dot4(Base),
-    Line1(Base, Degree),
-    Line2(Base),
-    Line3(Base),
+    Dot1(Polar, Polar, f32),
+    Dot2(Polar, Polar, f32),
+    Dot3(Polar, Polar, f32),
+    Dot4(Polar, Polar, f32),
+    Line1(Polar, Polar, f32, Degree),
+    Line2(Polar, Polar, f32),
+    Line3(Polar, Polar, f32),
 }
 
 impl Modifier {
-    pub fn base(&self) -> &Base {
-        match self {
-            Modifier::Blank(base_type) => base_type,
-            Modifier::Dot1(base_type) => base_type,
-            Modifier::Dot2(base_type) => base_type,
-            Modifier::Dot3(base_type) => base_type,
-            Modifier::Dot4(base_type) => base_type,
-            Modifier::Line1(base_type, _) => base_type,
-            Modifier::Line2(base_type) => base_type,
-            Modifier::Line3(base_type) => base_type,
-        }
-    }
-
     pub fn to_drawings(&self) -> Vec<Drawing> {
         match self {
-            Modifier::Dot1(base_type) => match base_type {
-                Base::Crescent(letter, base) => {
-                    draw_dots(letter, base, CRESCENT_HEIGHT, vec![Degree(0.0)])
-                }
-                Base::Full(letter, base) => draw_dots(letter, base, FULL_HEIGHT, vec![Degree(0.0)]),
-                Base::Quarter(letter, base) => {
-                    draw_dots(letter, base, DEFAULT_BASE_HEIGHT, vec![Degree(0.0)])
-                }
-                Base::New(letter, base) => {
-                    draw_dots(letter, base, DEFAULT_BASE_HEIGHT, vec![Degree(0.0)])
-                }
-                _ => todo!("Vowel"),
-            },
-            Modifier::Dot2(base_type) => match base_type {
-                Base::Crescent(letter, base) => draw_dots(
-                    letter,
-                    base,
-                    CRESCENT_HEIGHT,
-                    vec![Degree(-45.0), Degree(45.0)],
-                ),
-                Base::Full(letter, base) => {
-                    draw_dots(letter, base, FULL_HEIGHT, vec![Degree(-45.0), Degree(45.0)])
-                }
-                Base::Quarter(letter, base) => draw_dots(
-                    letter,
-                    base,
-                    DEFAULT_BASE_HEIGHT,
-                    vec![Degree(-45.0), Degree(45.0)],
-                ),
-                Base::New(letter, base) => draw_dots(
-                    letter,
-                    base,
-                    DEFAULT_BASE_HEIGHT,
-                    vec![Degree(-45.0), Degree(45.0)],
-                ),
-                _ => todo!("Vowel"),
-            },
-            Modifier::Dot3(base_type) => match base_type {
-                Base::Crescent(letter, base) => draw_dots(
-                    letter,
-                    base,
-                    CRESCENT_HEIGHT,
-                    vec![Degree(-45.0), Degree(0.0), Degree(45.0)],
-                ),
-                Base::Full(letter, base) => draw_dots(
-                    letter,
-                    base,
-                    FULL_HEIGHT,
-                    vec![Degree(-45.0), Degree(0.0), Degree(45.0)],
-                ),
-                Base::Quarter(letter, base) => draw_dots(
-                    letter,
-                    base,
-                    DEFAULT_BASE_HEIGHT,
-                    vec![Degree(-45.0), Degree(0.0), Degree(45.0)],
-                ),
-                Base::New(letter, base) => draw_dots(
-                    letter,
-                    base,
-                    DEFAULT_BASE_HEIGHT,
-                    vec![Degree(-45.0), Degree(0.0), Degree(45.0)],
-                ),
-                _ => todo!("Vowel"),
-            },
-            Modifier::Dot4(base_type) => match base_type {
-                Base::Crescent(letter, base) => draw_dots(
-                    letter,
-                    base,
-                    CRESCENT_HEIGHT,
-                    vec![Degree(-30.0), Degree(-15.0), Degree(15.0), Degree(30.0)],
-                ),
-                Base::Full(letter, base) => draw_dots(
-                    letter,
-                    base,
-                    FULL_HEIGHT,
-                    vec![Degree(-30.0), Degree(-15.0), Degree(15.0), Degree(30.0)],
-                ),
-                Base::Quarter(letter, base) => draw_dots(
-                    letter,
-                    base,
-                    DEFAULT_BASE_HEIGHT,
-                    vec![Degree(-30.0), Degree(-15.0), Degree(15.0), Degree(30.0)],
-                ),
-                Base::New(letter, base) => draw_dots(
-                    letter,
-                    base,
-                    DEFAULT_BASE_HEIGHT,
-                    vec![Degree(-30.0), Degree(-15.0), Degree(15.0), Degree(30.0)],
-                ),
-                _ => todo!("Vowel"),
-            },
-            Modifier::Line1(base_type, angle) => match base_type {
-                Base::Crescent(letter, base) => {
-                    draw_normal_lines(letter, base, CRESCENT_HEIGHT, vec![*angle])
-                }
-                Base::Full(letter, base) => {
-                    draw_normal_lines(letter, base, FULL_HEIGHT, vec![*angle])
-                }
-                Base::Quarter(letter, base) => {
-                    draw_normal_lines(letter, base, DEFAULT_BASE_HEIGHT, vec![*angle])
-                }
-                Base::New(letter, base) => {
-                    draw_normal_lines(letter, base, DEFAULT_BASE_HEIGHT, vec![*angle])
-                }
-                _ => todo!("Vowel"),
-            },
-            Modifier::Line2(base_type) => match base_type {
-                Base::Crescent(letter, base) => draw_normal_lines(
-                    letter,
-                    base,
-                    CRESCENT_HEIGHT,
-                    vec![Degree(-45.0), Degree(45.0)],
-                ),
-                Base::Full(letter, base) => {
-                    draw_normal_lines(letter, base, FULL_HEIGHT, vec![Degree(-45.0), Degree(45.0)])
-                }
-                Base::Quarter(letter, base) => draw_normal_lines(
-                    letter,
-                    base,
-                    DEFAULT_BASE_HEIGHT,
-                    vec![Degree(-45.0), Degree(45.0)],
-                ),
-                Base::New(letter, base) => draw_normal_lines(
-                    letter,
-                    base,
-                    DEFAULT_BASE_HEIGHT,
-                    vec![Degree(-45.0), Degree(45.0)],
-                ),
-                _ => todo!("Vowel"),
-            },
-            Modifier::Line3(base_type) => match base_type {
-                Base::Crescent(letter, base) => draw_normal_lines(
-                    letter,
-                    base,
-                    CRESCENT_HEIGHT,
-                    vec![Degree(-45.0), Degree(0.0), Degree(45.0)],
-                ),
-                Base::Full(letter, base) => draw_normal_lines(
-                    letter,
-                    base,
-                    FULL_HEIGHT,
-                    vec![Degree(-45.0), Degree(0.0), Degree(45.0)],
-                ),
-                Base::Quarter(letter, base) => draw_normal_lines(
-                    letter,
-                    base,
-                    DEFAULT_BASE_HEIGHT,
-                    vec![Degree(-45.0), Degree(0.0), Degree(45.0)],
-                ),
-                Base::New(letter, base) => draw_normal_lines(
-                    letter,
-                    base,
-                    DEFAULT_BASE_HEIGHT,
-                    vec![Degree(-45.0), Degree(0.0), Degree(45.0)],
-                ),
-                _ => todo!("Vowel"),
-            },
-            _ => todo!(""),
+            Modifier::Dot1(letter, base, base_height) => {
+                draw_dots(letter, base, base_height, vec![Degree(0.0)])
+            }
+            Modifier::Dot2(letter, base, base_height) => {
+                draw_dots(letter, base, base_height, vec![Degree(-45.0), Degree(45.0)])
+            }
+            Modifier::Dot3(letter, base, base_height) => draw_dots(
+                letter,
+                base,
+                base_height,
+                vec![Degree(-45.0), Degree(0.0), Degree(45.0)],
+            ),
+            Modifier::Dot4(letter, base, base_height) => draw_dots(
+                letter,
+                base,
+                base_height,
+                vec![Degree(-45.0), Degree(-22.5), Degree(22.5), Degree(45.0)],
+            ),
+            Modifier::Line1(letter, base, base_height, degree) => {
+                draw_lines(letter, base, base_height, vec![*degree])
+            }
+            Modifier::Line2(letter, base, base_height) => {
+                draw_lines(letter, base, base_height, vec![Degree(-45.0), Degree(45.0)])
+            }
+            Modifier::Line3(letter, base, base_height) => draw_lines(
+                letter,
+                base,
+                base_height,
+                vec![Degree(-45.0), Degree(0.0), Degree(45.0)],
+            ),
         }
     }
 }
