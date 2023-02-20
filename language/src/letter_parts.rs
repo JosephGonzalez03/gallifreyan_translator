@@ -7,37 +7,6 @@ pub const FULL_HEIGHT: f32 = 1.2;
 pub const DEFAULT_BASE_HEIGHT: f32 = 0.0;
 const DOT_OFFSET_HEIGHT: f32 = 0.2;
 
-fn draw_dots(letter: &Polar, base: &Polar, base_height: &f32, angles: Vec<Degree>) -> Vec<Drawing> {
-    angles
-        .into_iter()
-        .map(|angle| {
-            dot(
-                letter,
-                &(base * &Polar::new(base_height + DOT_OFFSET_HEIGHT, Degree(0.0))),
-                &(base * &Polar::new(1.0, angle)),
-            )
-        })
-        .collect()
-}
-
-fn draw_lines(
-    letter: &Polar,
-    base: &Polar,
-    base_height: &f32,
-    angles: Vec<Degree>,
-) -> Vec<Drawing> {
-    angles
-        .into_iter()
-        .map(|angle| {
-            normal_line(
-                letter,
-                &(base * &Polar::new(*base_height, Degree(0.0))),
-                &(base * &Polar::new(1.0, angle)),
-            )
-        })
-        .collect()
-}
-
 pub enum Base {
     Vowel(Polar, Polar),
     Crescent(Polar, Polar),
@@ -73,7 +42,7 @@ impl Base {
             ),
             Base::Crescent(letter, base) => arc3_d(
                 &letter,
-                &(base * &Polar::new(CRESCENT_HEIGHT, Degree(180.0))),
+                &(base * &Polar::new(CRESCENT_HEIGHT, letter.angle() + Degree(0.0))),
                 base.radius(),
                 (
                     letter.angle() + Degree(30.0),
@@ -82,7 +51,7 @@ impl Base {
             ),
             Base::Full(letter, base) => arc3_d(
                 &letter,
-                &(base * &Polar::new(FULL_HEIGHT, Degree(0.0))),
+                &(base * &Polar::new(FULL_HEIGHT, letter.angle() + Degree(0.0))),
                 base.radius(),
                 (Degree(0.0), Degree(360.0)),
             ),
@@ -99,7 +68,7 @@ impl Base {
                 &letter,
                 &Polar::new(DEFAULT_BASE_HEIGHT, Degree(0.0)),
                 base.radius(),
-                (letter.angle() + Degree(0.0), letter.angle() + Degree(360.0)),
+                (Degree(0.0), Degree(360.0)),
             ),
         }
     }
@@ -169,6 +138,37 @@ impl Base {
             (edge1, edge2)
         ))
     }
+}
+
+fn draw_dots(letter: &Polar, base: &Polar, base_height: &f32, angles: Vec<Degree>) -> Vec<Drawing> {
+    angles
+        .into_iter()
+        .map(|angle| {
+            dot(
+                letter,
+                &(base * &Polar::new(base_height + DOT_OFFSET_HEIGHT, letter.angle() + Degree(0.0))),
+                &(base * &Polar::new(1.0, letter.angle() + angle)),
+            )
+        })
+        .collect()
+}
+
+fn draw_lines(
+    letter: &Polar,
+    base: &Polar,
+    base_height: &f32,
+    angles: Vec<Degree>,
+) -> Vec<Drawing> {
+    angles
+        .into_iter()
+        .map(|angle| {
+            normal_line(
+                letter,
+                &(base * &Polar::new(*base_height, letter.angle() + Degree(0.0))),
+                &(base * &Polar::new(1.0, letter.angle() + angle)),
+            )
+        })
+        .collect()
 }
 
 pub enum Modifier {

@@ -83,10 +83,10 @@ impl GallifreyanLetter {
                 modifiers: Some(Modifier::Dot3(*position, letter_size, CRESCENT_HEIGHT)),
             },
             GallifreyanLetter::G(position) => LetterParts {
-                base: Base::Crescent(*position, letter_size),
+                base: Base::Crescent(*position, *position / Polar::new(3.0, Degree(0.0))),
                 modifiers: Some(Modifier::Line1(
                     *position,
-                    letter_size,
+                    *position / Polar::new(3.0, Degree(0.0)),
                     CRESCENT_HEIGHT,
                     Degree(0.0),
                 )),
