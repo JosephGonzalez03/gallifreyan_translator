@@ -148,7 +148,7 @@ pub fn arc(radius: f32, range: (Degree, Degree)) -> Drawing {
     .collect::<Drawing>()
 }
 
-pub fn arc3_d(letter: &Polar, height: &Polar, size: f32, range: (Degree, Degree)) -> Drawing {
+pub fn arc3_d(letter: &Polar, height: &Polar, size: &f32, range: (Degree, Degree)) -> Drawing {
     let start_range = range.0 .0.round() as i32;
     let end_range = range.1 .0.round() as i32;
 
