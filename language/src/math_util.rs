@@ -203,7 +203,7 @@ pub fn normal_line(letter: &Polar, height: &Polar, modifier: &Polar) -> Drawing 
 
 pub fn law_of_sines_angle(side_a: &f32, side_b: &f32, angle_b: Degree) -> Degree {
     Degree::new(
-        ((side_b * (180.0 - angle_b.value().to_radians()).sin()) / side_a)
+        ((side_b * (180.0 - angle_b.value()).to_radians().sin()) / side_a)
             .asin()
             .to_degrees(),
     )
