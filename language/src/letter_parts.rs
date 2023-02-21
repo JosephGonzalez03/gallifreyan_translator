@@ -6,6 +6,8 @@ pub const CRESCENT_HEIGHT: f32 = 0.9;
 pub const FULL_HEIGHT: f32 = 1.2;
 pub const DEFAULT_BASE_HEIGHT: f32 = 0.0;
 const DOT_OFFSET_HEIGHT: f32 = 0.2;
+const CRESCENT_BASE_OFFSET: Degree = Degree(30.0);
+const QUARTER_BASE_OFFSET: Degree = Degree(100.0);
 
 pub enum Base {
     Vowel(Polar, Polar),
@@ -45,13 +47,13 @@ impl Base {
                 &Polar::new(letter * CRESCENT_HEIGHT, word.angle() + Degree(180.0)),
                 letter,
                 (
-                    word.angle() + Degree(30.0),
-                    word.angle() + Degree(330.0),
+                    word.angle() + CRESCENT_BASE_OFFSET,
+                    word.angle() - CRESCENT_BASE_OFFSET,
                 ),
             ),
             Base::Full(word, letter) => arc3_d(
                 &word,
-                &Polar::new(letter * FULL_HEIGHT, word.angle() + Degree(0.0)),
+                &Polar::new(letter * FULL_HEIGHT, word.angle()),
                 letter,
                 (Degree(0.0), Degree(360.0)),
             ),
@@ -60,8 +62,8 @@ impl Base {
                 &Polar::new(DEFAULT_BASE_HEIGHT, Degree(180.0)),
                 letter,
                 (
-                    word.angle() + Degree(95.0),
-                    word.angle() + Degree(265.0),
+                    word.angle() + QUARTER_BASE_OFFSET,
+                    word.angle() - QUARTER_BASE_OFFSET,
                 ),
             ),
             Base::New(word, letter) => arc3_d(
@@ -76,17 +78,17 @@ impl Base {
     fn starting_angle(&self) -> Option<Degree> {
         match self {
             Base::Crescent(word, letter) => Some(
-                word.angle() + law_of_sines_angle(
+                word.angle() - law_of_sines_angle(
                     &word.radius(),
                     letter,
-                    Degree(30.0),
+                    CRESCENT_BASE_OFFSET,
                 ),
             ),
             Base::Quarter(word, letter) => Some(
-                word.angle() + law_of_sines_angle(
+                word.angle() - law_of_sines_angle(
                     &word.radius(),
                     letter,
-                    Degree(90.0),
+                    QUARTER_BASE_OFFSET,
                 )
             ),
             _ => None,
@@ -96,17 +98,17 @@ impl Base {
     fn ending_angle(&self) -> Option<Degree> {
         match self {
             Base::Crescent(word, letter) => Some(
-                word.angle() - law_of_sines_angle(
+                word.angle() + law_of_sines_angle(
                     &word.radius(),
                     letter,
-                    Degree(30.0),
+                    CRESCENT_BASE_OFFSET,
                 ),
             ),
             Base::Quarter(word, letter) => Some(
-                word.angle() - law_of_sines_angle(
+                word.angle() + law_of_sines_angle(
                     &word.radius(),
                     letter,
-                    Degree(90.0),
+                    QUARTER_BASE_OFFSET,
                 )
             ),
             _ => None,
