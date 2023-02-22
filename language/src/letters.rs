@@ -1,5 +1,5 @@
 use crate::letter_parts::*;
-use crate::math_util::{Degree, Polar, Drawing, arc3_d};
+use crate::math_util::{Degree, Polar};
 use std::mem::discriminant;
 
 pub struct LetterParts {

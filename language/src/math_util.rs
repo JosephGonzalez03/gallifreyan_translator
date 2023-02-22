@@ -131,7 +131,7 @@ impl FromIterator<(f32, f32)> for Drawing {
     }
 }
 
-pub fn arc(radius: f32, range: (Degree, Degree)) -> Drawing {
+pub fn draw_arc(radius: f32, range: (Degree, Degree)) -> Drawing {
     let start_range = range.0 .0.round() as i32;
     let end_range = range.1 .0.round() as i32;
 
@@ -148,7 +148,7 @@ pub fn arc(radius: f32, range: (Degree, Degree)) -> Drawing {
     .collect::<Drawing>()
 }
 
-pub fn arc3_d(letter: &Polar, height: &Polar, size: &f32, range: (Degree, Degree)) -> Drawing {
+pub fn draw_arc_3d(word: &Polar, letter: &Polar, base: &f32, range: (Degree, Degree)) -> Drawing {
     let start_range = range.0 .0.round() as i32;
     let end_range = range.1 .0.round() as i32;
 
@@ -158,44 +158,44 @@ pub fn arc3_d(letter: &Polar, height: &Polar, size: &f32, range: (Degree, Degree
     }
     .map(|angle| {
         (
-            letter.radius * letter.angle.0.to_radians().cos()
-                + height.radius * height.angle.0.to_radians().cos()
-                + size * (angle as f32).to_radians().cos(),
-            letter.radius * letter.angle.0.to_radians().sin()
-                + height.radius * height.angle.0.to_radians().sin()
-                + size * (angle as f32).to_radians().sin(),
+            word.radius * word.angle.0.to_radians().cos()
+                + letter.radius * letter.angle.0.to_radians().cos()
+                + base * (angle as f32).to_radians().cos(),
+            word.radius * word.angle.0.to_radians().sin()
+                + letter.radius * letter.angle.0.to_radians().sin()
+                + base * (angle as f32).to_radians().sin(),
         )
     })
     .collect::<Drawing>()
 }
 
-pub fn dot(letter: &Polar, height: &Polar, modifier: &Polar) -> Drawing {
+pub fn draw_dot_3d(word: &Polar, letter: &Polar, modifier: &Polar) -> Drawing {
     Drawing(vec![(
-        letter.radius * letter.angle.0.to_radians().cos()
-            + height.radius * height.angle.0.to_radians().cos()
+        word.radius * word.angle.0.to_radians().cos()
+            + letter.radius * letter.angle.0.to_radians().cos()
             + modifier.radius * modifier.angle.0.to_radians().cos(),
-        letter.radius * letter.angle.0.to_radians().sin()
-            + height.radius * height.angle.0.to_radians().sin()
+        word.radius * word.angle.0.to_radians().sin()
+            + letter.radius * letter.angle.0.to_radians().sin()
             + modifier.radius * modifier.angle.0.to_radians().sin(),
     )])
 }
 
-pub fn normal_line(letter: &Polar, height: &Polar, modifier: &Polar) -> Drawing {
+pub fn draw_line_3d(word: &Polar, letter: &Polar, modifier: &Polar) -> Drawing {
     Drawing(vec![
         (
-            letter.radius * letter.angle.0.to_radians().cos()
-                + height.radius * height.angle.0.to_radians().cos()
+            word.radius * word.angle.0.to_radians().cos()
+                + letter.radius * letter.angle.0.to_radians().cos()
                 + modifier.radius * modifier.angle.0.to_radians().cos(),
-            letter.radius * letter.angle.0.to_radians().sin()
-                + height.radius * height.angle.0.to_radians().sin()
+            word.radius * word.angle.0.to_radians().sin()
+                + letter.radius * letter.angle.0.to_radians().sin()
                 + modifier.radius * modifier.angle.0.to_radians().sin(),
         ),
         (
-            letter.radius * letter.angle.0.to_radians().cos()
-                + height.radius * height.angle.0.to_radians().cos()
+            word.radius * word.angle.0.to_radians().cos()
+                + letter.radius * letter.angle.0.to_radians().cos()
                 + 1.5 * modifier.radius * modifier.angle.0.to_radians().cos(),
-            letter.radius * letter.angle.0.to_radians().sin()
-                + height.radius * height.angle.0.to_radians().sin()
+            word.radius * word.angle.0.to_radians().sin()
+                + letter.radius * letter.angle.0.to_radians().sin()
                 + 1.5 * modifier.radius * modifier.angle.0.to_radians().sin(),
         ),
     ])

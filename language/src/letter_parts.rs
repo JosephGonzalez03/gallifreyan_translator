@@ -36,13 +36,13 @@ impl Base {
 
     pub fn to_drawing(&self) -> Drawing {
         match self {
-            Base::Vowel(position, vowel_position) => arc3_d(
+            Base::Vowel(position, vowel_position) => draw_arc_3d(
                 &position,
                 &Polar::new(position.radius() / 3.0, vowel_position.angle()),
                 &vowel_position.radius(),
                 (Degree(0.0), Degree(360.0)),
             ),
-            Base::Crescent(word, letter) => arc3_d(
+            Base::Crescent(word, letter) => draw_arc_3d(
                 &word,
                 &Polar::new(letter * CRESCENT_HEIGHT, word.angle() + Degree(180.0)),
                 letter,
@@ -51,13 +51,13 @@ impl Base {
                     word.angle() - CRESCENT_BASE_OFFSET,
                 ),
             ),
-            Base::Full(word, letter) => arc3_d(
+            Base::Full(word, letter) => draw_arc_3d(
                 &word,
                 &Polar::new(letter * FULL_HEIGHT, word.angle()),
                 letter,
                 (Degree(0.0), Degree(360.0)),
             ),
-            Base::Quarter(word, letter) => arc3_d(
+            Base::Quarter(word, letter) => draw_arc_3d(
                 &word,
                 &Polar::new(DEFAULT_BASE_HEIGHT, Degree(180.0)),
                 letter,
@@ -66,7 +66,7 @@ impl Base {
                     word.angle() - QUARTER_BASE_OFFSET,
                 ),
             ),
-            Base::New(word, letter) => arc3_d(
+            Base::New(word, letter) => draw_arc_3d(
                 &word,
                 &Polar::new(DEFAULT_BASE_HEIGHT, Degree(0.0)),
                 letter,
@@ -135,7 +135,7 @@ impl Base {
             .starting_angle()
             .expect("There is an early return for bases that don't have edges.");
 
-        Some(arc(
+        Some(draw_arc(
             self.position().radius(),
             (edge1, edge2)
         ))
@@ -146,7 +146,7 @@ fn draw_dots(word: &Polar, letter: &f32, base: &f32, angles: Vec<Degree>) -> Vec
     angles
         .into_iter()
         .map(|angle| {
-            dot(
+            draw_dot_3d(
                 word,
                 &Polar::new(letter * (base + DOT_OFFSET_HEIGHT), word.angle() + Degree(180.0)),
                 &Polar::new(*letter, word.angle() + angle + Degree(180.0)),
@@ -164,7 +164,7 @@ fn draw_lines(
     angles
         .into_iter()
         .map(|angle| {
-            normal_line(
+            draw_line_3d(
                 word,
                 &Polar::new(letter * base, word.angle() + Degree(180.0)),
                 &Polar::new(*letter, word.angle() + angle),
