@@ -4,7 +4,7 @@ use std::mem::discriminant;
 
 pub struct LetterParts {
     base: Base,
-    modifiers: Option<Modifier>,
+    modifier: Option<Modifier>,
 }
 
 impl LetterParts {
@@ -12,8 +12,8 @@ impl LetterParts {
         &self.base
     }
 
-    pub fn modifiers(&self) -> &Option<Modifier> {
-        &self.modifiers
+    pub fn modifier(&self) -> &Option<Modifier> {
+        &self.modifier
     }
 }
 
@@ -72,19 +72,19 @@ impl GallifreyanLetter {
             GallifreyanLetter::U(word) => todo!(""),
             GallifreyanLetter::B(word) => LetterParts {
                 base: Base::Crescent(*word, letter),
-                modifiers: None,
+                modifier: None,
             },
             GallifreyanLetter::CH(word) => LetterParts {
                 base: Base::Crescent(*word, letter),
-                modifiers: Some(Modifier::Dot2(*word, letter, CRESCENT_HEIGHT)),
+                modifier: Some(Modifier::Dot2(*word, letter, CRESCENT_HEIGHT)),
             },
             GallifreyanLetter::D(word) => LetterParts {
                 base: Base::Crescent(*word, letter),
-                modifiers: Some(Modifier::Dot3(*word, letter, CRESCENT_HEIGHT)),
+                modifier: Some(Modifier::Dot3(*word, letter, CRESCENT_HEIGHT)),
             },
             GallifreyanLetter::G(word) => LetterParts {
                 base: Base::Crescent(*word, letter),
-                modifiers: Some(Modifier::Line1(
+                modifier: Some(Modifier::Line1(
                     *word,
                     letter,
                     CRESCENT_HEIGHT,
@@ -93,35 +93,35 @@ impl GallifreyanLetter {
             },
             GallifreyanLetter::H(word) => LetterParts {
                 base: Base::Crescent(*word, letter),
-                modifiers: Some(Modifier::Line2(*word, letter, CRESCENT_HEIGHT)),
+                modifier: Some(Modifier::Line2(*word, letter, CRESCENT_HEIGHT)),
             },
             GallifreyanLetter::F(word) => LetterParts {
                 base: Base::Crescent(*word, letter),
-                modifiers: Some(Modifier::Line3(*word, letter, CRESCENT_HEIGHT)),
+                modifier: Some(Modifier::Line3(*word, letter, CRESCENT_HEIGHT)),
             },
             GallifreyanLetter::J(word) => LetterParts {
                 base: Base::Full(*word, letter),
-                modifiers: None,
+                modifier: None,
             },
             GallifreyanLetter::PH(word) => LetterParts {
                 base: Base::Full(*word, letter),
-                modifiers: Some(Modifier::Dot1(*word, letter, FULL_HEIGHT)),
+                modifier: Some(Modifier::Dot1(*word, letter, FULL_HEIGHT)),
             },
             GallifreyanLetter::K(word) => LetterParts {
                 base: Base::Full(*word, letter),
-                modifiers: Some(Modifier::Dot2(*word, letter, FULL_HEIGHT)),
+                modifier: Some(Modifier::Dot2(*word, letter, FULL_HEIGHT)),
             },
             GallifreyanLetter::L(word) => LetterParts {
                 base: Base::Full(*word, letter),
-                modifiers: Some(Modifier::Dot3(*word, letter, FULL_HEIGHT)),
+                modifier: Some(Modifier::Dot3(*word, letter, FULL_HEIGHT)),
             },
             GallifreyanLetter::C(word) => LetterParts {
                 base: Base::Full(*word, letter),
-                modifiers: Some(Modifier::Dot4(*word, letter, FULL_HEIGHT)),
+                modifier: Some(Modifier::Dot4(*word, letter, FULL_HEIGHT)),
             },
             GallifreyanLetter::N(word) => LetterParts {
                 base: Base::Full(*word, letter),
-                modifiers: Some(Modifier::Line1(
+                modifier: Some(Modifier::Line1(
                     *word,
                     letter,
                     FULL_HEIGHT,
@@ -130,31 +130,31 @@ impl GallifreyanLetter {
             },
             GallifreyanLetter::P(word) => LetterParts {
                 base: Base::Full(*word, letter),
-                modifiers: Some(Modifier::Line2(*word, letter, FULL_HEIGHT)),
+                modifier: Some(Modifier::Line2(*word, letter, FULL_HEIGHT)),
             },
             GallifreyanLetter::M(word) => LetterParts {
                 base: Base::Full(*word, letter),
-                modifiers: Some(Modifier::Line3(*word, letter, FULL_HEIGHT)),
+                modifier: Some(Modifier::Line3(*word, letter, FULL_HEIGHT)),
             },
             GallifreyanLetter::T(word) => LetterParts {
                 base: Base::Quarter(*word, letter),
-                modifiers: None,
+                modifier: None,
             },
             GallifreyanLetter::WH(word) => LetterParts {
                 base: Base::Quarter(*word, letter),
-                modifiers: Some(Modifier::Dot1(*word, letter, DEFAULT_BASE_HEIGHT)),
+                modifier: Some(Modifier::Dot1(*word, letter, DEFAULT_BASE_HEIGHT)),
             },
             GallifreyanLetter::SH(word) => LetterParts {
                 base: Base::Quarter(*word, letter),
-                modifiers: Some(Modifier::Dot2(*word, letter, DEFAULT_BASE_HEIGHT)),
+                modifier: Some(Modifier::Dot2(*word, letter, DEFAULT_BASE_HEIGHT)),
             },
             GallifreyanLetter::R(word) => LetterParts {
                 base: Base::Quarter(*word, letter),
-                modifiers: Some(Modifier::Dot3(*word, letter, DEFAULT_BASE_HEIGHT)),
+                modifier: Some(Modifier::Dot3(*word, letter, DEFAULT_BASE_HEIGHT)),
             },
             GallifreyanLetter::V(word) => LetterParts {
                 base: Base::Quarter(*word, letter),
-                modifiers: Some(Modifier::Line1(
+                modifier: Some(Modifier::Line1(
                     *word,
                     letter,
                     DEFAULT_BASE_HEIGHT,
@@ -163,35 +163,35 @@ impl GallifreyanLetter {
             },
             GallifreyanLetter::W(word) => LetterParts {
                 base: Base::Quarter(*word, letter),
-                modifiers: Some(Modifier::Line2(*word, letter, DEFAULT_BASE_HEIGHT)),
+                modifier: Some(Modifier::Line2(*word, letter, DEFAULT_BASE_HEIGHT)),
             },
             GallifreyanLetter::S(word) => LetterParts {
                 base: Base::Quarter(*word, letter),
-                modifiers: Some(Modifier::Line3(*word, letter, DEFAULT_BASE_HEIGHT)),
+                modifier: Some(Modifier::Line3(*word, letter, DEFAULT_BASE_HEIGHT)),
             },
             GallifreyanLetter::TH(word) => LetterParts {
                 base: Base::New(*word, letter),
-                modifiers: None,
+                modifier: None,
             },
             GallifreyanLetter::GH(word) => LetterParts {
                 base: Base::New(*word, letter),
-                modifiers: Some(Modifier::Dot1(*word, letter, DEFAULT_BASE_HEIGHT)),
+                modifier: Some(Modifier::Dot1(*word, letter, DEFAULT_BASE_HEIGHT)),
             },
             GallifreyanLetter::Y(word) => LetterParts {
                 base: Base::New(*word, letter),
-                modifiers: Some(Modifier::Dot2(*word, letter, DEFAULT_BASE_HEIGHT)),
+                modifier: Some(Modifier::Dot2(*word, letter, DEFAULT_BASE_HEIGHT)),
             },
             GallifreyanLetter::Z(word) => LetterParts {
                 base: Base::New(*word, letter),
-                modifiers: Some(Modifier::Dot3(*word, letter, DEFAULT_BASE_HEIGHT)),
+                modifier: Some(Modifier::Dot3(*word, letter, DEFAULT_BASE_HEIGHT)),
             },
             GallifreyanLetter::Q(word) => LetterParts {
                 base: Base::New(*word, letter),
-                modifiers: Some(Modifier::Dot4(*word, letter, DEFAULT_BASE_HEIGHT)),
+                modifier: Some(Modifier::Dot4(*word, letter, DEFAULT_BASE_HEIGHT)),
             },
             GallifreyanLetter::QU(word) => LetterParts {
                 base: Base::New(*word, letter),
-                modifiers: Some(Modifier::Line1(
+                modifier: Some(Modifier::Line1(
                     *word,
                     letter,
                     DEFAULT_BASE_HEIGHT,
@@ -200,11 +200,11 @@ impl GallifreyanLetter {
             },
             GallifreyanLetter::X(word) => LetterParts {
                 base: Base::New(*word, letter),
-                modifiers: Some(Modifier::Line2(*word, letter, DEFAULT_BASE_HEIGHT)),
+                modifier: Some(Modifier::Line2(*word, letter, DEFAULT_BASE_HEIGHT)),
             },
             GallifreyanLetter::NG(word) => LetterParts {
                 base: Base::New(*word, letter),
-                modifiers: Some(Modifier::Line3(*word, letter, DEFAULT_BASE_HEIGHT)),
+                modifier: Some(Modifier::Line3(*word, letter, DEFAULT_BASE_HEIGHT)),
             },
         }
     }

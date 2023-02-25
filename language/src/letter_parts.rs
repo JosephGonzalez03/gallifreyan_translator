@@ -53,7 +53,7 @@ impl Base {
             ),
             Base::Full(word, letter) => draw_arc_3d(
                 &word,
-                &Polar::new(letter * FULL_HEIGHT, word.angle()),
+                &Polar::new(letter * FULL_HEIGHT, word.angle() + Degree(180.0)),
                 letter,
                 (Degree(0.0), Degree(360.0)),
             ),
@@ -167,7 +167,7 @@ fn draw_lines(
             draw_line_3d(
                 word,
                 &Polar::new(letter * base, word.angle() + Degree(180.0)),
-                &Polar::new(*letter, word.angle() + angle),
+                &Polar::new(*letter, word.angle() + angle + Degree(180.0)),
             )
         })
         .collect()
