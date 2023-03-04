@@ -103,6 +103,7 @@ impl Div for &Polar {
     }
 }
 
+#[derive(Clone)]
 pub struct Drawing(Vec<(f32, f32)>);
 
 impl Drawing {
@@ -142,7 +143,7 @@ pub fn draw_arc(radius: f32, range: (Degree, Degree)) -> Drawing {
     .map(|angle| {
         (
             radius * (angle as f32).to_radians().cos(),
-            radius * (angle as f32).to_radians().sin()
+            radius * (angle as f32).to_radians().sin(),
         )
     })
     .collect::<Drawing>()
