@@ -12,21 +12,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .build_cartesian_2d(-10f32..10f32, -10f32..10f32)?;
 
     chart.configure_mesh().draw()?;
-    if let Ok(drawings) = GallifreyanWord::from("TCHX") {
-        drawings
-            .to_drawings(6.0)
-            .iter()
-            .for_each(|drawing| {
-                chart
-                    .draw_series(
-                        LineSeries::new(drawing
-                            .to_points()
-                            .to_vec(),
-                        BLUE));
-            });
+    if let Ok(drawings) = GallifreyanWord::from("TCHXD") {
+        drawings.to_drawings(6.0).iter().for_each(|drawing| {
+            chart.draw_series(LineSeries::new(drawing.to_points().to_vec(), BLUE));
+        });
     }
-
-
 
     /*
     word.letters().iter().for_each(|letter| {

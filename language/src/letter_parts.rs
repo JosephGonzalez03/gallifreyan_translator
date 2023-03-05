@@ -6,9 +6,10 @@ pub const CRESCENT_HEIGHT: f32 = 0.9;
 pub const FULL_HEIGHT: f32 = 1.2;
 pub const DEFAULT_BASE_HEIGHT: f32 = 0.0;
 const DOT_OFFSET_HEIGHT: f32 = 0.2;
-const CRESCENT_BASE_OFFSET: Degree = Degree(30.0);
-const QUARTER_BASE_OFFSET: Degree = Degree(100.0);
+pub const CRESCENT_BASE_OFFSET: Degree = Degree(30.0);
+pub const QUARTER_BASE_OFFSET: Degree = Degree(100.0);
 
+#[derive(Clone, Copy)]
 pub enum Base {
     Vowel,
     Crescent,
@@ -101,32 +102,20 @@ impl Base {
 }
 
 #[derive(Clone)]
-pub struct DrawingCollection(Vec<Drawing>);
+pub struct DrawingCollection(pub Vec<Drawing>);
 
 impl DrawingCollection {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self(Vec::new())
-    }
-
-    pub fn drawings(self) -> Vec<Drawing> {
-        self.0
-    }
-
-    pub fn append(&mut self, mut other: Vec<Drawing>) {
-        self.0.append(&mut other)
-    }
-
-    fn push(&mut self, value: Drawing) {
-        self.0.push(value)
     }
 }
 
-impl FromIterator<Vec<Drawing>> for DrawingCollection {
-    fn from_iter<T: IntoIterator<Item = Vec<Drawing>>>(iter: T) -> Self {
+impl FromIterator<Drawing> for DrawingCollection {
+    fn from_iter<T: IntoIterator<Item = Drawing>>(iter: T) -> Self {
         let mut drawings = DrawingCollection::new();
 
         for i in iter {
-            drawings.append(i)
+            drawings.0.push(i)
         }
 
         drawings
@@ -162,6 +151,7 @@ fn draw_lines(word: &Polar, letter: &f32, base: &f32, angles: Vec<Degree>) -> Ve
         .collect()
 }
 
+#[derive(Clone, Copy)]
 pub enum Modifier {
     Dot1,
     Dot2,
