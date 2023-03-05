@@ -1,6 +1,5 @@
 use crate::letter_parts::*;
 use crate::math_util::{draw_arc, law_of_sines_angle, Degree, Drawing, Polar};
-use std::iter::zip;
 use std::str::FromStr;
 
 #[derive(Clone, Copy)]
@@ -425,16 +424,16 @@ impl GallifreyanWord {
     }
 
     pub fn to_drawings(&self, word: f32) -> Vec<Drawing> {
-        let mut current_position = -1.0;
-        let position_step: f32 = 360.0 /
-            self
-            .0
-            .iter()
-            .filter(|gallifreyan_letter| !gallifreyan_letter.is_vowel())
-            .map(|_| 1.0)
-            .sum::<f32>();
+        let mut current_position: f32 = -1.0;
+        let step_size: f32 = 360.0
+            / self
+                .0
+                .iter()
+                .filter(|gallifreyan_letter| !gallifreyan_letter.is_vowel())
+                .map(|_| 1.0)
+                .sum::<f32>();
 
-        let positions = self
+        let gallifreyan_characters: Vec<GallifreyanCharacter> = self
             .0
             .iter()
             .map(|gallifreyan_letter| match gallifreyan_letter.is_vowel() {
@@ -444,17 +443,15 @@ impl GallifreyanWord {
                     current_position
                 }
             })
-            .map(|position| (position * position_step) - 90.0);
-
-        let gallifreyan_characters = zip(&self.0, positions)
-            .into_iter()
-            .map(|(gallifreyan_letter, position)| {
+            .map(|position| (position * step_size) - 90.0)
+            .zip(&mut self.0.iter())
+            .map(|(position, gallifreyan_letter)| {
                 gallifreyan_letter.to_gallifreyan_character(Polar::new(word, Degree(position)))
             })
             .collect::<GallifreyanCharacterCollection>()
             .0;
 
-        let mut character_drawings = gallifreyan_characters
+        let mut character_drawings: Vec<Drawing> = gallifreyan_characters
             .iter()
             .flat_map(|gallifreyan_character| {
                 let mut drawings = DrawingCollection::new();
@@ -470,7 +467,7 @@ impl GallifreyanWord {
             .collect::<DrawingCollection>()
             .0;
 
-        let mut characters_with_edges = gallifreyan_characters
+        let mut characters_with_edges: Vec<GallifreyanCharacter> = gallifreyan_characters
             .into_iter()
             .filter(|gallifreyan_character| gallifreyan_character.has_edge())
             .collect::<GallifreyanCharacterCollection>()
