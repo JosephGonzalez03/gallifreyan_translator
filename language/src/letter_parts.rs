@@ -69,30 +69,6 @@ impl Base {
         }
     }
 
-    fn starting_angle(&self, word: &Polar, letter: &f32) -> Option<Degree> {
-        match self {
-            Base::Crescent => Some(
-                word.angle() - law_of_sines_angle(&word.radius(), letter, CRESCENT_BASE_OFFSET),
-            ),
-            Base::Quarter => {
-                Some(word.angle() - law_of_sines_angle(&word.radius(), letter, QUARTER_BASE_OFFSET))
-            }
-            _ => None,
-        }
-    }
-
-    fn ending_angle(&self, word: &Polar, letter: &f32) -> Option<Degree> {
-        match self {
-            Base::Crescent => Some(
-                word.angle() + law_of_sines_angle(&word.radius(), letter, CRESCENT_BASE_OFFSET),
-            ),
-            Base::Quarter => {
-                Some(word.angle() + law_of_sines_angle(&word.radius(), letter, QUARTER_BASE_OFFSET))
-            }
-            _ => None,
-        }
-    }
-
     pub fn has_edge(&self) -> bool {
         match self {
             Base::Crescent | Base::Quarter => true,

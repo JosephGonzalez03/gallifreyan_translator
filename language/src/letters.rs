@@ -1,13 +1,13 @@
 use crate::letter_parts::*;
-use crate::math_util::{draw_arc, law_of_sines_angle, Degree, Drawing, Polar};
+use crate::math_util::{law_of_sines_angle, Degree, Drawing, Polar};
 use std::str::FromStr;
 
 #[derive(Clone, Copy)]
 pub struct GallifreyanCharacter {
     base: Base,
-    modifier: Option<Modifier>,
+    pub modifier: Option<Modifier>,
     size: f32,
-    position: Polar,
+    pub position: Polar,
 }
 
 impl GallifreyanCharacter {
@@ -37,7 +37,7 @@ impl GallifreyanCharacter {
         matches!(&self.base, Base::Crescent | Base::Quarter)
     }
 
-    fn starting_angle(&self) -> Option<Degree> {
+    pub fn starting_angle(&self) -> Option<Degree> {
         match self.base {
             Base::Crescent => Some(
                 self.position.angle()
@@ -51,7 +51,7 @@ impl GallifreyanCharacter {
         }
     }
 
-    fn ending_angle(&self) -> Option<Degree> {
+    pub fn ending_angle(&self) -> Option<Degree> {
         match self.base {
             Base::Crescent => Some(
                 self.position.angle()
@@ -66,7 +66,7 @@ impl GallifreyanCharacter {
     }
 }
 
-struct GallifreyanCharacterCollection(pub Vec<GallifreyanCharacter>);
+pub struct GallifreyanCharacterCollection(pub Vec<GallifreyanCharacter>);
 
 impl FromIterator<GallifreyanCharacter> for GallifreyanCharacterCollection {
     fn from_iter<T: IntoIterator<Item = GallifreyanCharacter>>(iter: T) -> Self {
@@ -423,7 +423,7 @@ impl GallifreyanWord {
             .collect::<Result<GallifreyanWord, ParseGallifreyanLetterError>>()
     }
 
-    pub fn to_drawings(&self, word: f32) -> Vec<Drawing> {
+    pub fn to_gallifreyan_characters(&self, word: f32) -> Vec<GallifreyanCharacter> {
         let mut current_position: f32 = -1.0;
         let step_size: f32 = 360.0
             / self
@@ -433,8 +433,7 @@ impl GallifreyanWord {
                 .map(|_| 1.0)
                 .sum::<f32>();
 
-        let gallifreyan_characters: Vec<GallifreyanCharacter> = self
-            .0
+        self.0
             .iter()
             .map(|gallifreyan_letter| match gallifreyan_letter.is_vowel() {
                 true => current_position,
@@ -449,46 +448,6 @@ impl GallifreyanWord {
                 gallifreyan_letter.to_gallifreyan_character(Polar::new(word, Degree(position)))
             })
             .collect::<GallifreyanCharacterCollection>()
-            .0;
-
-        let mut character_drawings: Vec<Drawing> = gallifreyan_characters
-            .iter()
-            .flat_map(|gallifreyan_character| {
-                let mut drawings = DrawingCollection::new();
-
-                drawings.0.push(gallifreyan_character.draw_base());
-
-                if let Some(modifier_drawings) = &mut gallifreyan_character.draw_modifier() {
-                    drawings.0.append(modifier_drawings);
-                }
-
-                drawings.0
-            })
-            .collect::<DrawingCollection>()
-            .0;
-
-        let mut characters_with_edges: Vec<GallifreyanCharacter> = gallifreyan_characters
-            .into_iter()
-            .filter(|gallifreyan_character| gallifreyan_character.has_edge())
-            .collect::<GallifreyanCharacterCollection>()
-            .0;
-
-        characters_with_edges.extend_from_within(..1);
-        characters_with_edges
-            .as_slice()
-            .windows(2)
-            .map(|letters| {
-                let edge1 = letters[0]
-                    .ending_angle()
-                    .expect("The Gallifreyan character should have an edge.");
-                let edge2 = letters[1]
-                    .starting_angle()
-                    .expect("The Gallifreyan character should have an edge.");
-
-                draw_arc(letters[0].position.radius(), (edge1, edge2))
-            })
-            .for_each(|drawings| character_drawings.push(drawings));
-
-        character_drawings
+            .0
     }
 }
