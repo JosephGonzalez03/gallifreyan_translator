@@ -26,37 +26,33 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 ))
                 .unwrap();
 
-            if let Some(modifier) = gallifreyan_character.modifier {
-                match modifier {
-                    Modifier::Line1 | Modifier::Line2 | Modifier::Line3 => {
-                        gallifreyan_character
-                            .draw_modifier()
-                            .expect("Already checked if modifier exists.")
-                            .iter()
-                            .for_each(|drawing| {
-                                chart
-                                    .draw_series(LineSeries::new(
-                                        drawing.to_points().to_vec(),
-                                        BLUE,
-                                    ))
-                                    .unwrap();
-                            });
-                    }
-                    _ => {
-                        gallifreyan_character
-                            .draw_modifier()
-                            .expect("Already checked if modifier exists.")
-                            .iter()
-                            .for_each(|drawing| {
-                                chart
-                                    .draw_series(
-                                        LineSeries::new(drawing.to_points().to_vec(), BLUE.filled())
-                                            .point_size(2),
-                                    )
-                                    .unwrap();
-                            });
-                    }
+            match gallifreyan_character.modifier {
+                Some(Modifier::Line1 | Modifier::Line2 | Modifier::Line3) => {
+                    gallifreyan_character
+                        .draw_modifier()
+                        .expect("Already checked if modifier exists.")
+                        .iter()
+                        .for_each(|drawing| {
+                            chart
+                                .draw_series(LineSeries::new(drawing.to_points().to_vec(), BLUE))
+                                .unwrap();
+                        });
                 }
+                Some(Modifier::Dot1 | Modifier::Dot2 | Modifier::Dot3 | Modifier::Dot4) => {
+                    gallifreyan_character
+                        .draw_modifier()
+                        .expect("Already checked if modifier exists.")
+                        .iter()
+                        .for_each(|drawing| {
+                            chart
+                                .draw_series(
+                                    LineSeries::new(drawing.to_points().to_vec(), BLUE.filled())
+                                        .point_size(2),
+                                )
+                                .unwrap();
+                        });
+                }
+                None => ()
             }
         });
 
