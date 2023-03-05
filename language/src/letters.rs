@@ -384,9 +384,6 @@ impl FromIterator<GallifreyanLetter> for GallifreyanWord {
     }
 }
 
-#[derive(Debug)]
-struct UsizeParsingError;
-
 impl GallifreyanWord {
     pub fn new() -> GallifreyanWord {
         GallifreyanWord(Vec::new())
@@ -427,22 +424,15 @@ impl GallifreyanWord {
             .collect::<Result<GallifreyanWord, ParseGallifreyanLetterError>>()
     }
 
-    fn parse_usize(num: &usize) -> Result<f32, UsizeParsingError> {
-        if num > &(f32::MAX as usize) {
-            Err(UsizeParsingError)
-        } else {
-            Ok(*num as f32)
-        }
-    }
-
     pub fn to_drawings(&self, word: f32) -> Vec<Drawing> {
         let mut current_position = -1.0;
-        let num_of_consonants: usize = self
+        let position_step: f32 = 360.0 /
+            self
             .0
             .iter()
-            .map(|gallifreyan_letter| !gallifreyan_letter.is_vowel())
-            .count();
-        let position_step: f32 = 360.0 / Self::parse_usize(&num_of_consonants).unwrap();
+            .filter(|gallifreyan_letter| !gallifreyan_letter.is_vowel())
+            .map(|_| 1.0)
+            .sum::<f32>();
 
         let positions = self
             .0
