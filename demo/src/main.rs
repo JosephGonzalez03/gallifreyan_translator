@@ -12,11 +12,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .build_cartesian_2d(-10f32..10f32, -10f32..10f32)?;
 
     chart.configure_mesh().draw()?;
-    let gallifreyan_characters: Vec<GallifreyanCharacter> = GallifreyanWord::from("TCHXD")
+    let gallifreyan_word: Vec<GallifreyanCharacter> = GallifreyanWord::from("TCHXD")
         .unwrap()
         .to_gallifreyan_characters(6.0);
 
-    gallifreyan_characters
+    gallifreyan_word
         .iter()
         .for_each(|gallifreyan_character| {
             chart
@@ -56,7 +56,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         });
 
-    let mut characters_with_edges: Vec<GallifreyanCharacter> = gallifreyan_characters
+    let mut characters_with_edges: Vec<GallifreyanCharacter> = gallifreyan_word
         .into_iter()
         .filter(|gallifreyan_character| gallifreyan_character.has_edge())
         .collect::<GallifreyanCharacterCollection>()
