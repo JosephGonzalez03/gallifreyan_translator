@@ -192,7 +192,6 @@ impl GallifreyanCharacter {
             Some(
                 modifier
                     .to_drawings(self.origin, base, self.size)
-                    .to_owned(),
             )
         } else {
             None
@@ -255,4 +254,3 @@ impl GallifreyanCharacterCollection {
         Self(Vec::new())
     }
 }
-
