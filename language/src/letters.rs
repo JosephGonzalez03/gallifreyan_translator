@@ -1,4 +1,4 @@
-use crate::letter_parts::*;
+use crate::glyphs::*;
 use geomath::prelude::coordinates::Polar;
 use geomath::vector::Vector2;
 use std::f64::consts::{FRAC_PI_2, PI};
