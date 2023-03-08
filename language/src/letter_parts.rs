@@ -4,7 +4,7 @@ use std::f64::consts::{FRAC_PI_4, FRAC_PI_6, FRAC_PI_8, PI};
 const CRESCENT_BASE_RATIO: f64 = 0.9;
 const FULL_BASE_RATIO: f64 = 1.2;
 const DEFAULT_BASE_RATIO: f64 = 0.0;
-const DOT_OFFSET_RATIO: f64 = 0.4;
+const DOT_OFFSET: f64 = 0.4;
 const CRESCENT_BASE_OFFSET: f64 = FRAC_PI_6;
 const QUARTER_BASE_OFFSET: f64 = 5.0 * PI / 9.0;
 
@@ -24,7 +24,7 @@ pub fn draw_base(position: Vector2, size: f64, range: (f64, f64), offset: f64) -
 fn draw_dots(position: Vector2, size: f64, angles: Vec<f64>, offset: f64) -> Vec<Vec<(f32, f32)>> {
     angles
         .into_iter()
-        .map(|angle| position - Vector2::from_polar(size + DOT_OFFSET_RATIO, angle + offset))
+        .map(|angle| position - Vector2::from_polar(size + DOT_OFFSET, angle + offset))
         .map(|vector| vec![(vector.x as f32, vector.y as f32)])
         .collect::<Vec<Vec<(f32, f32)>>>()
 }
