@@ -1,12 +1,12 @@
 use geomath::{prelude::coordinates::Polar, vector::Vector2};
 use std::f64::consts::{FRAC_PI_4, FRAC_PI_6, FRAC_PI_8, PI};
 
-pub const CRESCENT_BASE_RATIO: f64 = 0.9;
-pub const FULL_BASE_RATIO: f64 = 1.2;
-pub const DEFAULT_BASE_RATIO: f64 = 0.0;
-pub const DOT_OFFSET_RATIO: f64 = 0.4;
-pub const CRESCENT_BASE_OFFSET: f64 = FRAC_PI_6;
-pub const QUARTER_BASE_OFFSET: f64 = 5.0 * PI / 9.0;
+const CRESCENT_BASE_RATIO: f64 = 0.9;
+const FULL_BASE_RATIO: f64 = 1.2;
+const DEFAULT_BASE_RATIO: f64 = 0.0;
+const DOT_OFFSET_RATIO: f64 = 0.4;
+const CRESCENT_BASE_OFFSET: f64 = FRAC_PI_6;
+const QUARTER_BASE_OFFSET: f64 = 5.0 * PI / 9.0;
 
 pub fn draw_base(position: Vector2, size: f64, range: (f64, f64), offset: f64) -> Vec<(f32, f32)> {
     let start_range = ((range.0 * 180.0) / PI).round() as i64;
@@ -165,3 +165,94 @@ impl Modifier {
         }
     }
 }
+
+#[derive(Clone, Copy)]
+pub struct GallifreyanCharacter {
+    pub base: Base,
+    pub modifier: Option<Modifier>,
+    pub position: Vector2,
+    pub size: f64,
+}
+
+impl GallifreyanCharacter {
+    pub fn draw_base(&self) -> Vec<(f32, f32)> {
+        self.base.to_drawing(self.position, self.size).to_owned()
+    }
+
+    pub fn draw_modifier(&self) -> Option<Vec<Vec<(f32, f32)>>> {
+        if let Some(modifier) = &self.modifier {
+            let base = match self.base {
+                Base::Crescent => {
+                    Vector2::from_polar(CRESCENT_BASE_RATIO * self.size, self.position.phi())
+                }
+                Base::Full => Vector2::from_polar(FULL_BASE_RATIO * self.size, self.position.phi()),
+                _ => Vector2::from_polar(DEFAULT_BASE_RATIO * self.size, self.position.phi()),
+            };
+
+            Some(
+                modifier
+                    .to_drawings(self.position, base, self.size)
+                    .to_owned(),
+            )
+        } else {
+            None
+        }
+    }
+
+    pub fn has_edge(&self) -> bool {
+        matches!(&self.base, Base::Crescent | Base::Quarter)
+    }
+
+    fn find_edge_wrt_word(&self, angle: f64) -> f64 {
+        ((self.size * angle.sin()) / self.position.rho()).asin()
+    }
+
+    pub fn starting_angle(&self) -> Option<f64> {
+        match self.base {
+            Base::Crescent => Some(
+                self.position.phi()
+                    - self.find_edge_wrt_word(CRESCENT_BASE_OFFSET)
+            ),
+            Base::Quarter => Some(
+                self.position.phi()
+                    - self.find_edge_wrt_word(QUARTER_BASE_OFFSET)
+            ),
+            _ => None,
+        }
+    }
+
+    pub fn ending_angle(&self) -> Option<f64> {
+        match self.base {
+            Base::Crescent => Some(
+                self.position.phi()
+                    + self.find_edge_wrt_word(CRESCENT_BASE_OFFSET)
+            ),
+            Base::Quarter => Some(
+                self.position.phi()
+                    + self.find_edge_wrt_word(QUARTER_BASE_OFFSET)
+            ),
+            _ => None,
+        }
+    }
+}
+
+pub struct GallifreyanCharacterCollection(pub Vec<GallifreyanCharacter>);
+
+impl FromIterator<GallifreyanCharacter> for GallifreyanCharacterCollection {
+    fn from_iter<T: IntoIterator<Item = GallifreyanCharacter>>(iter: T) -> Self {
+        let mut gallifreyan_characters = GallifreyanCharacterCollection::new();
+
+        for i in iter {
+            gallifreyan_characters.0.push(i)
+        }
+
+        gallifreyan_characters
+    }
+}
+
+impl GallifreyanCharacterCollection {
+    fn new() -> Self {
+        Self(Vec::new())
+    }
+}
+

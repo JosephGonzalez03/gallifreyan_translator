@@ -1,6 +1,6 @@
 use geomath::{prelude::coordinates::Polar, vector::Vector2};
 use language::{
-    letter_parts::{draw_base, Modifier},
+    letter_parts::{*, Modifier},
     letters::*,
 };
 use plotters::prelude::*;
