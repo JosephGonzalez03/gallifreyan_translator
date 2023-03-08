@@ -77,7 +77,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             draw_base(
                 Vector2::from_polar(0.0, 0.0),
-                letters[0].position.rho(),
+                letters[0].origin.rho(),
                 (edge1, edge2),
                 0.0,
             )
