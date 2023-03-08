@@ -4,5 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+geomath = "0.2.4"
 language = { path = "../language" }
 plotters = "0.3.1"

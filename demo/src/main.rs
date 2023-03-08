@@ -1,4 +1,8 @@
-use language::{letter_parts::Modifier, letters::*, math_util::draw_arc};
+use geomath::{prelude::coordinates::Polar, vector::Vector2};
+use language::{
+    letter_parts::{draw_base, Modifier},
+    letters::*,
+};
 use plotters::prelude::*;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -16,45 +20,42 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .unwrap()
         .to_gallifreyan_characters(6.0);
 
-    gallifreyan_word
-        .iter()
-        .for_each(|gallifreyan_character| {
-            chart
-                .draw_series(LineSeries::new(
-                    gallifreyan_character.draw_base().to_points().to_vec(),
-                    BLUE,
-                ))
-                .unwrap();
+    gallifreyan_word.iter().for_each(|gallifreyan_character| {
+        chart
+            .draw_series(LineSeries::new(
+                gallifreyan_character.draw_base().to_vec(),
+                BLUE,
+            ))
+            .unwrap();
 
-            match gallifreyan_character.modifier {
-                Some(Modifier::Line1 | Modifier::Line2 | Modifier::Line3) => {
-                    gallifreyan_character
-                        .draw_modifier()
-                        .expect("Already checked if modifier exists.")
-                        .iter()
-                        .for_each(|drawing| {
-                            chart
-                                .draw_series(LineSeries::new(drawing.to_points().to_vec(), BLUE))
-                                .unwrap();
-                        });
-                }
-                Some(Modifier::Dot1 | Modifier::Dot2 | Modifier::Dot3 | Modifier::Dot4) => {
-                    gallifreyan_character
-                        .draw_modifier()
-                        .expect("Already checked if modifier exists.")
-                        .iter()
-                        .for_each(|drawing| {
-                            chart
-                                .draw_series(
-                                    LineSeries::new(drawing.to_points().to_vec(), BLUE.filled())
-                                        .point_size(2),
-                                )
-                                .unwrap();
-                        });
-                }
-                None => ()
+        match gallifreyan_character.modifier {
+            Some(Modifier::Line1 | Modifier::Line2 | Modifier::Line3) => {
+                gallifreyan_character
+                    .draw_modifier()
+                    .expect("Already checked if modifier exists.")
+                    .iter()
+                    .for_each(|drawing| {
+                        chart
+                            .draw_series(LineSeries::new(drawing.to_vec(), BLUE))
+                            .unwrap();
+                    });
             }
-        });
+            Some(Modifier::Dot1 | Modifier::Dot2 | Modifier::Dot3 | Modifier::Dot4) => {
+                gallifreyan_character
+                    .draw_modifier()
+                    .expect("Already checked if modifier exists.")
+                    .iter()
+                    .for_each(|drawing| {
+                        chart
+                            .draw_series(
+                                LineSeries::new(drawing.to_vec(), BLUE.filled()).point_size(2),
+                            )
+                            .unwrap();
+                    });
+            }
+            None => (),
+        }
+    });
 
     let mut characters_with_edges: Vec<GallifreyanCharacter> = gallifreyan_word
         .into_iter()
@@ -74,11 +75,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .starting_angle()
                 .expect("The Gallifreyan character should have an edge.");
 
-            draw_arc(letters[0].position.radius(), (edge1, edge2))
+            draw_base(
+                Vector2::from_polar(0.0, 0.0),
+                letters[0].position.rho(),
+                (edge1, edge2),
+                0.0,
+            )
         })
         .for_each(|drawing| {
             chart
-                .draw_series(LineSeries::new(drawing.to_points().to_vec(), BLUE))
+                .draw_series(LineSeries::new(drawing.to_vec(), BLUE))
                 .unwrap();
         });
     Ok(())

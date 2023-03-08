@@ -1,31 +1,35 @@
 use crate::letter_parts::*;
-use crate::math_util::{law_of_sines_angle, Degree, Drawing, Polar};
+use geomath::prelude::coordinates::Polar;
+use geomath::vector::Vector2;
+use std::f64::consts::{FRAC_PI_2, PI};
 use std::str::FromStr;
 
 #[derive(Clone, Copy)]
 pub struct GallifreyanCharacter {
-    base: Base,
+    pub base: Base,
     pub modifier: Option<Modifier>,
-    size: f32,
-    pub position: Polar,
+    pub position: Vector2,
+    pub size: f64,
 }
 
 impl GallifreyanCharacter {
-    pub fn draw_base(&self) -> Drawing {
-        self.base.to_drawing(self.position, &self.size).to_owned()
+    pub fn draw_base(&self) -> Vec<(f32, f32)> {
+        self.base.to_drawing(self.position, self.size).to_owned()
     }
 
-    pub fn draw_modifier(&self) -> Option<Vec<Drawing>> {
+    pub fn draw_modifier(&self) -> Option<Vec<Vec<(f32, f32)>>> {
         if let Some(modifier) = &self.modifier {
-            let base_height = match self.base {
-                Base::Crescent => CRESCENT_HEIGHT,
-                Base::Full => FULL_HEIGHT,
-                _ => DEFAULT_BASE_HEIGHT,
+            let base = match self.base {
+                Base::Crescent => {
+                    Vector2::from_polar(CRESCENT_BASE_RATIO * self.size, self.position.phi())
+                }
+                Base::Full => Vector2::from_polar(FULL_BASE_RATIO * self.size, self.position.phi()),
+                _ => Vector2::from_polar(DEFAULT_BASE_RATIO * self.size, self.position.phi()),
             };
 
             Some(
                 modifier
-                    .to_drawings(&self.position, &self.size, &base_height)
+                    .to_drawings(self.position, base, self.size)
                     .to_owned(),
             )
         } else {
@@ -37,29 +41,41 @@ impl GallifreyanCharacter {
         matches!(&self.base, Base::Crescent | Base::Quarter)
     }
 
-    pub fn starting_angle(&self) -> Option<Degree> {
+    fn law_of_sines_angle(side_a: f64, side_b: f64, angle_b: f64) -> f64 {
+        ((side_b * angle_b.sin()) / side_a).asin()
+    }
+
+    pub fn starting_angle(&self) -> Option<f64> {
         match self.base {
             Base::Crescent => Some(
-                self.position.angle()
-                    - law_of_sines_angle(&self.position.radius(), &self.size, CRESCENT_BASE_OFFSET),
+                self.position.phi()
+                    - Self::law_of_sines_angle(
+                        self.position.rho(),
+                        self.size,
+                        CRESCENT_BASE_OFFSET,
+                    ),
             ),
             Base::Quarter => Some(
-                self.position.angle()
-                    - law_of_sines_angle(&self.position.radius(), &self.size, QUARTER_BASE_OFFSET),
+                self.position.phi()
+                    - Self::law_of_sines_angle(self.position.rho(), self.size, QUARTER_BASE_OFFSET),
             ),
             _ => None,
         }
     }
 
-    pub fn ending_angle(&self) -> Option<Degree> {
+    pub fn ending_angle(&self) -> Option<f64> {
         match self.base {
             Base::Crescent => Some(
-                self.position.angle()
-                    + law_of_sines_angle(&self.position.radius(), &self.size, CRESCENT_BASE_OFFSET),
+                self.position.phi()
+                    + Self::law_of_sines_angle(
+                        self.position.rho(),
+                        self.size,
+                        CRESCENT_BASE_OFFSET,
+                    ),
             ),
             Base::Quarter => Some(
-                self.position.angle()
-                    + law_of_sines_angle(&self.position.radius(), &self.size, QUARTER_BASE_OFFSET),
+                self.position.phi()
+                    + Self::law_of_sines_angle(self.position.rho(), self.size, QUARTER_BASE_OFFSET),
             ),
             _ => None,
         }
@@ -172,7 +188,7 @@ impl FromStr for GallifreyanLetter {
 }
 
 impl GallifreyanLetter {
-    pub fn to_gallifreyan_character(&self, position: Polar) -> GallifreyanCharacter {
+    pub fn to_gallifreyan_character(&self, position: Vector2) -> GallifreyanCharacter {
         let size = 2.0;
         match self {
             GallifreyanLetter::A => todo!(""),
@@ -183,176 +199,176 @@ impl GallifreyanLetter {
             GallifreyanLetter::B => GallifreyanCharacter {
                 base: Base::Crescent,
                 modifier: None,
-                size,
                 position,
+                size,
             },
             GallifreyanLetter::CH => GallifreyanCharacter {
                 base: Base::Crescent,
                 modifier: Some(Modifier::Dot2),
-                size,
                 position,
+                size,
             },
             GallifreyanLetter::D => GallifreyanCharacter {
                 base: Base::Crescent,
                 modifier: Some(Modifier::Dot3),
-                size,
                 position,
+                size,
             },
             GallifreyanLetter::G => GallifreyanCharacter {
                 base: Base::Crescent,
                 modifier: Some(Modifier::Line1),
-                size,
                 position,
+                size,
             },
             GallifreyanLetter::H => GallifreyanCharacter {
                 base: Base::Crescent,
                 modifier: Some(Modifier::Line2),
-                size,
                 position,
+                size,
             },
             GallifreyanLetter::F => GallifreyanCharacter {
                 base: Base::Crescent,
                 modifier: Some(Modifier::Line3),
-                size,
                 position,
+                size,
             },
             GallifreyanLetter::J => GallifreyanCharacter {
                 base: Base::Full,
                 modifier: None,
-                size,
                 position,
+                size,
             },
             GallifreyanLetter::PH => GallifreyanCharacter {
                 base: Base::Full,
                 modifier: Some(Modifier::Dot1),
-                size,
                 position,
+                size,
             },
             GallifreyanLetter::K => GallifreyanCharacter {
                 base: Base::Full,
                 modifier: Some(Modifier::Dot2),
-                size,
                 position,
+                size,
             },
             GallifreyanLetter::L => GallifreyanCharacter {
                 base: Base::Full,
                 modifier: Some(Modifier::Dot3),
-                size,
                 position,
+                size,
             },
             GallifreyanLetter::C => GallifreyanCharacter {
                 base: Base::Full,
                 modifier: Some(Modifier::Dot4),
-                size,
                 position,
+                size,
             },
             GallifreyanLetter::N => GallifreyanCharacter {
                 base: Base::Full,
                 modifier: Some(Modifier::Line1),
-                size,
                 position,
+                size,
             },
             GallifreyanLetter::P => GallifreyanCharacter {
                 base: Base::Full,
                 modifier: Some(Modifier::Line2),
-                size,
                 position,
+                size,
             },
             GallifreyanLetter::M => GallifreyanCharacter {
                 base: Base::Full,
                 modifier: Some(Modifier::Line3),
-                size,
                 position,
+                size,
             },
             GallifreyanLetter::T => GallifreyanCharacter {
                 base: Base::Quarter,
                 modifier: None,
-                size,
                 position,
+                size,
             },
             GallifreyanLetter::WH => GallifreyanCharacter {
                 base: Base::Quarter,
                 modifier: Some(Modifier::Dot1),
-                size,
                 position,
+                size,
             },
             GallifreyanLetter::SH => GallifreyanCharacter {
                 base: Base::Quarter,
                 modifier: Some(Modifier::Dot2),
-                size,
                 position,
+                size,
             },
             GallifreyanLetter::R => GallifreyanCharacter {
                 base: Base::Quarter,
                 modifier: Some(Modifier::Dot3),
-                size,
                 position,
+                size,
             },
             GallifreyanLetter::V => GallifreyanCharacter {
                 base: Base::Quarter,
                 modifier: Some(Modifier::Line1),
-                size,
                 position,
+                size,
             },
             GallifreyanLetter::W => GallifreyanCharacter {
                 base: Base::Quarter,
                 modifier: Some(Modifier::Line2),
-                size,
                 position,
+                size,
             },
             GallifreyanLetter::S => GallifreyanCharacter {
                 base: Base::Quarter,
                 modifier: Some(Modifier::Line3),
-                size,
                 position,
+                size,
             },
             GallifreyanLetter::TH => GallifreyanCharacter {
                 base: Base::New,
                 modifier: None,
-                size,
                 position,
+                size,
             },
             GallifreyanLetter::GH => GallifreyanCharacter {
                 base: Base::New,
                 modifier: Some(Modifier::Dot1),
-                size,
                 position,
+                size,
             },
             GallifreyanLetter::Y => GallifreyanCharacter {
                 base: Base::New,
                 modifier: Some(Modifier::Dot2),
-                size,
                 position,
+                size,
             },
             GallifreyanLetter::Z => GallifreyanCharacter {
                 base: Base::New,
                 modifier: Some(Modifier::Dot3),
-                size,
                 position,
+                size,
             },
             GallifreyanLetter::Q => GallifreyanCharacter {
                 base: Base::New,
                 modifier: Some(Modifier::Dot4),
-                size,
                 position,
+                size,
             },
             GallifreyanLetter::QU => GallifreyanCharacter {
                 base: Base::New,
                 modifier: Some(Modifier::Line1),
-                size,
                 position,
+                size,
             },
             GallifreyanLetter::X => GallifreyanCharacter {
                 base: Base::New,
                 modifier: Some(Modifier::Line2),
-                size,
                 position,
+                size,
             },
             GallifreyanLetter::NG => GallifreyanCharacter {
                 base: Base::New,
                 modifier: Some(Modifier::Line3),
-                size,
                 position,
+                size,
             },
         }
     }
@@ -423,15 +439,15 @@ impl GallifreyanWord {
             .collect::<Result<GallifreyanWord, ParseGallifreyanLetterError>>()
     }
 
-    pub fn to_gallifreyan_characters(&self, word: f32) -> Vec<GallifreyanCharacter> {
-        let mut current_position: f32 = -1.0;
-        let step_size: f32 = 360.0
+    pub fn to_gallifreyan_characters(&self, word_size: f64) -> Vec<GallifreyanCharacter> {
+        let mut current_position: f64 = -1.0;
+        let step_size: f64 = 2.0 * PI
             / self
                 .0
                 .iter()
                 .filter(|gallifreyan_letter| !gallifreyan_letter.is_vowel())
                 .map(|_| 1.0)
-                .sum::<f32>();
+                .sum::<f64>();
 
         self.0
             .iter()
@@ -442,10 +458,11 @@ impl GallifreyanWord {
                     current_position
                 }
             })
-            .map(|position| (position * step_size) - 90.0)
+            .map(|position| (position * step_size) - FRAC_PI_2)
             .zip(&mut self.0.iter())
             .map(|(position, gallifreyan_letter)| {
-                gallifreyan_letter.to_gallifreyan_character(Polar::new(word, Degree(position)))
+                gallifreyan_letter
+                    .to_gallifreyan_character(Vector2::from_polar(word_size, position))
             })
             .collect::<GallifreyanCharacterCollection>()
             .0

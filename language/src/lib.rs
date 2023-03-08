@@ -5,5 +5,3 @@
 pub mod letter_parts;
 /// The `GallifreyanLetter` implementation.
 pub mod letters;
-/// Helper functions to calculate an `GallifreyanLetter`'s points.
-pub mod math_util;
