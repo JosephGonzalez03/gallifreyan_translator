@@ -75,12 +75,7 @@ impl Base {
             }
             Base::Full => {
                 let base = Vector2::from_polar(FULL_BASE_RATIO * letter_size, origin.phi());
-                draw_base(
-                    origin - base,
-                    letter_size,
-                    (0.0, 2.0 * PI),
-                    origin.phi(),
-                )
+                draw_base(origin - base, letter_size, (0.0, 2.0 * PI), origin.phi())
             }
             Base::Quarter => {
                 let base = Vector2::from_polar(DEFAULT_BASE_RATIO * letter_size, origin.phi());
@@ -93,12 +88,7 @@ impl Base {
             }
             Base::New => {
                 let base = Vector2::from_polar(DEFAULT_BASE_RATIO * letter_size, origin.phi());
-                draw_base(
-                    origin - base,
-                    letter_size,
-                    (0.0, 2.0 * PI),
-                    origin.phi(),
-                )
+                draw_base(origin - base, letter_size, (0.0, 2.0 * PI), origin.phi())
             }
         }
     }
@@ -123,41 +113,36 @@ pub enum Modifier {
 }
 
 impl Modifier {
-    pub fn to_drawings(
-        &self,
-        origin: Vector2,
-        base: Vector2,
-        letter_size: f64,
-    ) -> Vec<Vec<(f32, f32)>> {
+    pub fn to_drawings(&self, origin: Vector2, letter_size: f64) -> Vec<Vec<(f32, f32)>> {
         match self {
-            Modifier::Dot1 => draw_dots(origin - base, letter_size, vec![0.0], origin.phi()),
+            Modifier::Dot1 => draw_dots(origin, letter_size, vec![0.0], origin.phi()),
             Modifier::Dot2 => draw_dots(
-                origin - base,
+                origin,
                 letter_size,
                 vec![-FRAC_PI_4, FRAC_PI_4],
                 origin.phi(),
             ),
             Modifier::Dot3 => draw_dots(
-                origin - base,
+                origin,
                 letter_size,
                 vec![-FRAC_PI_4, 0.0, FRAC_PI_4],
                 origin.phi(),
             ),
             Modifier::Dot4 => draw_dots(
-                origin - base,
+                origin,
                 letter_size,
                 vec![-FRAC_PI_4, -FRAC_PI_8, FRAC_PI_8, FRAC_PI_4],
                 origin.phi(),
             ),
-            Modifier::Line1 => draw_lines(origin - base, letter_size, vec![0.0], origin.phi()),
+            Modifier::Line1 => draw_lines(origin, letter_size, vec![0.0], origin.phi()),
             Modifier::Line2 => draw_lines(
-                origin - base,
+                origin,
                 letter_size,
                 vec![-FRAC_PI_4, FRAC_PI_4],
                 origin.phi(),
             ),
             Modifier::Line3 => draw_lines(
-                origin - base,
+                origin,
                 letter_size,
                 vec![-FRAC_PI_4, 0.0, FRAC_PI_4],
                 origin.phi(),
@@ -189,10 +174,7 @@ impl GallifreyanCharacter {
                 _ => Vector2::from_polar(DEFAULT_BASE_RATIO * self.size, self.origin.phi()),
             };
 
-            Some(
-                modifier
-                    .to_drawings(self.origin, base, self.size)
-            )
+            Some(modifier.to_drawings(self.origin - base, self.size))
         } else {
             None
         }
@@ -208,28 +190,20 @@ impl GallifreyanCharacter {
 
     pub fn starting_angle(&self) -> Option<f64> {
         match self.base {
-            Base::Crescent => Some(
-                self.origin.phi()
-                    - self.find_edge_wrt_word(CRESCENT_BASE_OFFSET)
-            ),
-            Base::Quarter => Some(
-                self.origin.phi()
-                    - self.find_edge_wrt_word(QUARTER_BASE_OFFSET)
-            ),
+            Base::Crescent => {
+                Some(self.origin.phi() - self.find_edge_wrt_word(CRESCENT_BASE_OFFSET))
+            }
+            Base::Quarter => Some(self.origin.phi() - self.find_edge_wrt_word(QUARTER_BASE_OFFSET)),
             _ => None,
         }
     }
 
     pub fn ending_angle(&self) -> Option<f64> {
         match self.base {
-            Base::Crescent => Some(
-                self.origin.phi()
-                    + self.find_edge_wrt_word(CRESCENT_BASE_OFFSET)
-            ),
-            Base::Quarter => Some(
-                self.origin.phi()
-                    + self.find_edge_wrt_word(QUARTER_BASE_OFFSET)
-            ),
+            Base::Crescent => {
+                Some(self.origin.phi() + self.find_edge_wrt_word(CRESCENT_BASE_OFFSET))
+            }
+            Base::Quarter => Some(self.origin.phi() + self.find_edge_wrt_word(QUARTER_BASE_OFFSET)),
             _ => None,
         }
     }

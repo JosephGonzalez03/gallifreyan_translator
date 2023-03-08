@@ -1,8 +1,5 @@
 use geomath::{prelude::coordinates::Polar, vector::Vector2};
-use language::{
-    glyphs::*,
-    letters::*,
-};
+use language::{glyphs::*, letters::*};
 use plotters::prelude::*;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
