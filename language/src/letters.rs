@@ -9,8 +9,8 @@ pub struct ParseGallifreyanLetterError;
 
 /// An enumeration for the letters in the Gallifreyan alphabet.
 pub enum GallifreyanLetter {
-    E,
     A,
+    E,
     I,
     O,
     U,
