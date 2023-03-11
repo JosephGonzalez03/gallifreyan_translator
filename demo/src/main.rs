@@ -1,4 +1,3 @@
-use geomath::{prelude::coordinates::Polar, vector::Vector2};
 use language::{glyphs::*, letters::*};
 use plotters::prelude::*;
 
@@ -12,11 +11,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .build_cartesian_2d(-10f32..10f32, -10f32..10f32)?;
 
     chart.configure_mesh().draw()?;
-    let gallifreyan_word: Vec<GallifreyanCharacter> = GallifreyanWord::from("TCHXD")
-        .unwrap()
-        .to_gallifreyan_characters(6.0);
+    let gallifreyan_word = GallifreyanWord::from("TCHXD", 6.0);
 
-    gallifreyan_word.iter().for_each(|gallifreyan_character| {
+    gallifreyan_word.to_gallifreyan_characters().iter().for_each(|gallifreyan_character| {
         chart
             .draw_series(LineSeries::new(
                 gallifreyan_character.draw_base().to_vec(),
@@ -53,31 +50,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     });
 
-    let mut characters_with_edges: Vec<GallifreyanCharacter> = gallifreyan_word
+    gallifreyan_word
+        .draw_edges()
         .into_iter()
-        .filter(|gallifreyan_character| gallifreyan_character.has_edge())
-        .collect::<GallifreyanCharacterCollection>()
-        .0;
-
-    characters_with_edges.extend_from_within(..1);
-    characters_with_edges
-        .as_slice()
-        .windows(2)
-        .map(|letters| {
-            let edge1 = letters[0]
-                .ending_angle()
-                .expect("The Gallifreyan character should have an edge.");
-            let edge2 = letters[1]
-                .starting_angle()
-                .expect("The Gallifreyan character should have an edge.");
-
-            draw_base(
-                Vector2::from_polar(0.0, 0.0),
-                letters[0].origin.rho(),
-                (edge1, edge2),
-                0.0,
-            )
-        })
         .for_each(|drawing| {
             chart
                 .draw_series(LineSeries::new(drawing.to_vec(), BLUE))

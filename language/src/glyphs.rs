@@ -43,7 +43,6 @@ fn draw_lines(origin: Vector2, size: f64, angles: Vec<f64>, offset: f64) -> Vec<
         .collect::<Vec<Vec<(f32, f32)>>>()
 }
 
-#[derive(Clone, Copy)]
 pub enum Base {
     Vowel,
     Crescent,
@@ -101,7 +100,6 @@ impl Base {
     }
 }
 
-#[derive(Clone, Copy)]
 pub enum Modifier {
     Dot1,
     Dot2,

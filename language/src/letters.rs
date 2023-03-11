@@ -287,30 +287,27 @@ impl GallifreyanLetter {
     }
 }
 
-pub struct GallifreyanWord(Vec<GallifreyanLetter>);
+pub struct GallifreyanLetters(Vec<GallifreyanLetter>);
 
-impl FromIterator<GallifreyanLetter> for GallifreyanWord {
+impl FromIterator<GallifreyanLetter> for GallifreyanLetters {
     fn from_iter<T: IntoIterator<Item = GallifreyanLetter>>(iter: T) -> Self {
-        let mut word = GallifreyanWord::new();
+        let mut letters = Vec::new();
 
         for i in iter {
-            word.push(i);
+            letters.push(i);
         }
 
-        word
+        Self(letters)
     }
 }
 
+pub struct GallifreyanWord {
+    letters: Vec<GallifreyanLetter>,
+    size: f64,
+}
+
 impl GallifreyanWord {
-    pub fn new() -> GallifreyanWord {
-        GallifreyanWord(Vec::new())
-    }
-
-    fn push(&mut self, letter: GallifreyanLetter) {
-        self.0.push(letter);
-    }
-
-    pub fn from(word: &str) -> Result<GallifreyanWord, ParseGallifreyanLetterError> {
+    pub fn from(word: &str, size: f64) -> GallifreyanWord {
         let mut grouped_letters = Vec::<String>::new();
         let mut char_iter = word.chars().into_iter().peekable();
 
@@ -335,23 +332,28 @@ impl GallifreyanWord {
         }
 
         grouped_letters.iter().for_each(|gl| println!("{}", gl));
-        grouped_letters
+        let parsed_letters = grouped_letters
             .iter()
             .map(|letter| letter.parse::<GallifreyanLetter>())
-            .collect::<Result<GallifreyanWord, ParseGallifreyanLetterError>>()
+            .collect::<Result<GallifreyanLetters, ParseGallifreyanLetterError>>();
+
+        match parsed_letters {
+            Ok(letters) => GallifreyanWord { letters: letters.0, size },
+            Err(_) => panic!("The word could not be parsed to Gallifreyan!"),
+        }
     }
 
-    pub fn to_gallifreyan_characters(&self, word_size: f64) -> Vec<GallifreyanCharacter> {
+    pub fn to_gallifreyan_characters(&self) -> Vec<GallifreyanCharacter> {
         let mut current_position: f64 = -1.0;
         let step_size: f64 = 2.0 * PI
             / self
-                .0
+                .letters
                 .iter()
                 .filter(|gallifreyan_letter| !gallifreyan_letter.is_vowel())
                 .map(|_| 1.0)
                 .sum::<f64>();
 
-        self.0
+        self.letters
             .iter()
             .map(|gallifreyan_letter| match gallifreyan_letter.is_vowel() {
                 true => current_position,
@@ -361,12 +363,62 @@ impl GallifreyanWord {
                 }
             })
             .map(|position| (position * step_size) - FRAC_PI_2)
-            .zip(&mut self.0.iter())
+            .zip(&mut self.letters.iter())
             .map(|(position, gallifreyan_letter)| {
                 gallifreyan_letter
-                    .to_gallifreyan_character(Vector2::from_polar(word_size, position))
+                    .to_gallifreyan_character(Vector2::from_polar(self.size, position))
             })
             .collect::<GallifreyanCharacterCollection>()
             .0
+    }
+
+    pub fn draw_edges(&self) -> Vec<Vec<(f32,f32)>> {
+        let mut characters_with_edges: Vec<GallifreyanCharacter> = self.to_gallifreyan_characters()
+            .into_iter()
+            .filter(|gallifreyan_character| gallifreyan_character.has_edge())
+            .collect::<GallifreyanCharacterCollection>()
+            .0;
+
+        let mut edges: Vec<Vec<(f32,f32)>> = characters_with_edges
+            .as_slice()
+            .windows(2)
+            .map(|letters| {
+                let edge1 = letters[0]
+                    .ending_angle()
+                    .expect("The Gallifreyan character should have an edge.");
+                let edge2 = letters[1]
+                    .starting_angle()
+                    .expect("The Gallifreyan character should have an edge.");
+
+                draw_base(
+                    Vector2::from_polar(0.0, 0.0),
+                    letters[0].origin.rho(),
+                    (edge1, edge2),
+                    0.0,
+                )
+            })
+            .collect();
+
+        let edge1 = characters_with_edges
+            .pop()
+            .expect("The character should exist.")
+            .ending_angle()
+            .expect("The Gallifreyan character should have an edge.");
+        let edge2 = characters_with_edges
+            .get(0)
+            .expect("The character should exist.")
+            .starting_angle()
+            .expect("The Gallifreyan character should have an edge.");
+
+        edges.push(
+            draw_base(
+                Vector2::from_polar(0.0, 0.0),
+                self.size,
+                (edge1, edge2),
+                0.0,
+            )
+        );
+
+        edges
     }
 }
