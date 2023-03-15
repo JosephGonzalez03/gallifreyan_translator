@@ -11,44 +11,49 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .build_cartesian_2d(-10f32..10f32, -10f32..10f32)?;
 
     chart.configure_mesh().draw()?;
-    let gallifreyan_word = GallifreyanWord::from("TCHXD", 6.0);
+    let gallifreyan_word = GallifreyanWord::from("ODODODO", 6.0);
 
-    gallifreyan_word.to_gallifreyan_characters().iter().for_each(|gallifreyan_character| {
-        chart
-            .draw_series(LineSeries::new(
-                gallifreyan_character.draw_base().to_vec(),
-                BLUE,
-            ))
-            .unwrap();
+    gallifreyan_word
+        .to_gallifreyan_characters()
+        .iter()
+        .for_each(|gallifreyan_character| {
+            chart
+                .draw_series(LineSeries::new(
+                    gallifreyan_character.draw_base().to_vec(),
+                    BLUE,
+                ))
+                .unwrap();
 
-        match gallifreyan_character.modifier {
-            Some(Modifier::Line1 | Modifier::Line2 | Modifier::Line3) => {
-                gallifreyan_character
-                    .draw_modifier()
-                    .expect("Already checked if modifier exists.")
-                    .iter()
-                    .for_each(|drawing| {
-                        chart
-                            .draw_series(LineSeries::new(drawing.to_vec(), BLUE))
-                            .unwrap();
-                    });
+            match gallifreyan_character.modifier {
+                Some(
+                    Modifier::Line1 | Modifier::VowelLine1(_) | Modifier::Line2 | Modifier::Line3,
+                ) => {
+                    gallifreyan_character
+                        .draw_modifier()
+                        .expect("Already checked if modifier exists.")
+                        .iter()
+                        .for_each(|drawing| {
+                            chart
+                                .draw_series(LineSeries::new(drawing.to_vec(), BLUE))
+                                .unwrap();
+                        });
+                }
+                Some(Modifier::Dot1 | Modifier::Dot2 | Modifier::Dot3 | Modifier::Dot4) => {
+                    gallifreyan_character
+                        .draw_modifier()
+                        .expect("Already checked if modifier exists.")
+                        .iter()
+                        .for_each(|drawing| {
+                            chart
+                                .draw_series(
+                                    LineSeries::new(drawing.to_vec(), BLUE.filled()).point_size(2),
+                                )
+                                .unwrap();
+                        });
+                }
+                None => (),
             }
-            Some(Modifier::Dot1 | Modifier::Dot2 | Modifier::Dot3 | Modifier::Dot4) => {
-                gallifreyan_character
-                    .draw_modifier()
-                    .expect("Already checked if modifier exists.")
-                    .iter()
-                    .for_each(|drawing| {
-                        chart
-                            .draw_series(
-                                LineSeries::new(drawing.to_vec(), BLUE.filled()).point_size(2),
-                            )
-                            .unwrap();
-                    });
-            }
-            None => (),
-        }
-    });
+        });
 
     gallifreyan_word
         .draw_edges()
