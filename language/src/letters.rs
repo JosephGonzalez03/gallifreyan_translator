@@ -134,8 +134,7 @@ impl FromStr for GallifreyanLetter {
 }
 
 impl GallifreyanLetter {
-    pub fn to_gallifreyan_character(&self, origin: Vector2) -> GallifreyanCharacter {
-        let size = 2.0;
+    pub fn to_gallifreyan_character(&self, origin: Vector2, size: f64) -> GallifreyanCharacter {
         match self {
             GallifreyanLetter::A => GallifreyanCharacter {
                 base: Base::Moon(0.0),
@@ -427,6 +426,12 @@ impl GallifreyanWord {
         }
     }
 
+    fn calculate_letter_size(&self) -> f64 {
+        let a_angle = 2.0 * PI / self.letters.len() as f64;
+        let c_angle = 0.5 * (PI - a_angle);
+        0.7 * 0.5 * self.size * (a_angle.sin() / c_angle.sin())
+    }
+
     pub fn to_gallifreyan_characters(&self) -> Vec<GallifreyanCharacter> {
         let mut grouped_letters = Vec::new();
         let mut letter_iter = self.letters.iter().peekable();
@@ -450,15 +455,20 @@ impl GallifreyanWord {
             .enumerate()
             .flat_map(|(index, group)| {
                 let position = (index as f64 * step_size) - FRAC_PI_2;
+                let letter_size = self.calculate_letter_size();
                 let mut characters = Vec::new();
                 let first_character = group
                     .get(0)
                     .expect("There should be at least one letter in each group.")
-                    .to_gallifreyan_character(Vector2::from_polar(self.size, position));
+                    .to_gallifreyan_character(
+                        Vector2::from_polar(self.size, position),
+                        letter_size,
+                    );
 
                 if let Some(letter) = group.get(1) {
                     characters.push(letter.to_gallifreyan_character(
                         Vector2::from_polar(self.size, position) - first_character.base_vector(),
+                        letter_size,
                     ));
                 }
                 characters.push(first_character);
