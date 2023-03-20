@@ -427,9 +427,14 @@ impl GallifreyanWord {
     }
 
     fn calculate_letter_size(&self) -> f64 {
-        let a_angle = 2.0 * PI / self.letters.len() as f64;
-        let c_angle = 0.5 * (PI - a_angle);
-        0.7 * 0.5 * self.size * (a_angle.sin() / c_angle.sin())
+        match self.letters.len() {
+            1..=3 => 0.35 * self.size,
+            _ => {
+                let a_angle = 2.0 * PI / self.letters.len() as f64;
+                let c_angle = 0.5 * (PI - a_angle);
+                0.4 * 0.5 * self.size * (a_angle.sin() / c_angle.sin())
+            }
+        }
     }
 
     pub fn to_gallifreyan_characters(&self) -> Vec<GallifreyanCharacter> {
@@ -460,16 +465,11 @@ impl GallifreyanWord {
                 let first_character = group
                     .get(0)
                     .expect("There should be at least one letter in each group.")
-                    .to_gallifreyan_character(
-                        Vector2::from_polar(self.size, position),
-                        letter_size,
-                    );
+                    .to_gallifreyan_character(Vector2::from_polar(self.size, position), letter_size);
 
                 if let Some(letter) = group.get(1) {
                     characters.push(letter.to_gallifreyan_character(
-                        Vector2::from_polar(self.size, position) - first_character.base_vector(),
-                        letter_size,
-                    ));
+                        Vector2::from_polar(self.size, position) - first_character.base_vector(), letter_size));
                 }
                 characters.push(first_character);
 
@@ -480,12 +480,21 @@ impl GallifreyanWord {
     }
 
     pub fn draw_edges(&self) -> Vec<Vec<(f32, f32)>> {
-        let mut characters_with_edges: Vec<GallifreyanCharacter> = self
+        let characters_with_edges: Vec<GallifreyanCharacter> = self
             .to_gallifreyan_characters()
             .into_iter()
             .filter(|gallifreyan_character| gallifreyan_character.has_edge())
             .collect::<GallifreyanCharacterCollection>()
             .0;
+
+
+        if characters_with_edges.len() == 0 {
+            return vec![draw_base(
+            Vector2::from_polar(0.0, 0.0),
+            self.size,
+            (0.0, 2.0 * PI),
+            0.0)]
+        }
 
         let mut edges: Vec<Vec<(f32, f32)>> = characters_with_edges
             .as_slice()
@@ -508,15 +517,20 @@ impl GallifreyanWord {
             .collect();
 
         let edge1 = characters_with_edges
-            .pop()
+            .last()
             .expect("The character should exist.")
             .ending_angle()
             .expect("The Gallifreyan character should have an edge.");
-        let edge2 = characters_with_edges
-            .get(0)
-            .expect("The character should exist.")
-            .starting_angle()
-            .expect("The Gallifreyan character should have an edge.");
+        let edge2 = match characters_with_edges.first() {
+            Some(character) => character
+                .starting_angle()
+                .expect("The Gallifreyan character should have an edge."),
+            None => characters_with_edges
+                .last()
+                .expect("The character should exist.")
+                .starting_angle()
+                .expect("The Gallifreyan character should have an edge."),
+        };
 
         edges.push(draw_base(
             Vector2::from_polar(0.0, 0.0),
