@@ -432,6 +432,7 @@ impl GallifreyanWord {
 
                 let size = match num_of_letters_with_edges {
                     0..=1 => 2.0 * Self::LETTER_SIZE,
+                    2 => 3.0 * Self::LETTER_SIZE,
                     _ => {
                         let a_angle = 2.0 * PI / num_of_letters_with_edges as f64;
                         let c_angle = 0.5 * (PI - a_angle);
