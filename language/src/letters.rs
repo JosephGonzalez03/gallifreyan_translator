@@ -387,7 +387,10 @@ pub struct GallifreyanWord {
 }
 
 impl GallifreyanWord {
-    pub fn from(word: &str, size: f64) -> GallifreyanWord {
+    const LETTER_SIZE: f64 = 2.0;
+    const WORD_SIZE_RATIO: f64 = 5.2;
+
+    pub fn from(word: &str) -> GallifreyanWord {
         let mut grouped_letters = Vec::<String>::new();
         let mut char_iter = word.chars().into_iter().peekable();
 
@@ -418,22 +421,30 @@ impl GallifreyanWord {
             .collect::<Result<GallifreyanLetters, ParseGallifreyanLetterError>>();
 
         match parsed_letters {
-            Ok(letters) => GallifreyanWord {
-                letters: letters.0,
-                size,
-            },
-            Err(_) => panic!("The word could not be parsed to Gallifreyan!"),
-        }
-    }
+            Ok(letters) => {
+                let num_of_letters_with_edges = letters
+                    .0
+                    .iter()
+                    .filter(|letter| !letter.is_vowel())
+                    .collect::<GallifreyanLetters>()
+                    .0
+                    .len();
 
-    fn calculate_letter_size(&self) -> f64 {
-        match self.letters.len() {
-            1..=3 => 0.35 * self.size,
-            _ => {
-                let a_angle = 2.0 * PI / self.letters.len() as f64;
-                let c_angle = 0.5 * (PI - a_angle);
-                0.4 * 0.5 * self.size * (a_angle.sin() / c_angle.sin())
+                let size = match num_of_letters_with_edges {
+                    0..=1 => 2.0 * Self::LETTER_SIZE,
+                    _ => {
+                        let a_angle = 2.0 * PI / num_of_letters_with_edges as f64;
+                        let c_angle = 0.5 * (PI - a_angle);
+                        Self::WORD_SIZE_RATIO * Self::LETTER_SIZE * (c_angle.sin() / a_angle.sin())
+                    }
+                };
+
+                GallifreyanWord {
+                    letters: letters.0,
+                    size,
+                }
             }
+            Err(_) => panic!("The word could not be parsed to Gallifreyan!"),
         }
     }
 
@@ -460,16 +471,20 @@ impl GallifreyanWord {
             .enumerate()
             .flat_map(|(index, group)| {
                 let position = (index as f64 * step_size) - FRAC_PI_2;
-                let letter_size = self.calculate_letter_size();
                 let mut characters = Vec::new();
                 let first_character = group
                     .get(0)
                     .expect("There should be at least one letter in each group.")
-                    .to_gallifreyan_character(Vector2::from_polar(self.size, position), letter_size);
+                    .to_gallifreyan_character(
+                        Vector2::from_polar(self.size, position),
+                        Self::LETTER_SIZE,
+                    );
 
                 if let Some(letter) = group.get(1) {
                     characters.push(letter.to_gallifreyan_character(
-                        Vector2::from_polar(self.size, position) - first_character.base_vector(), letter_size));
+                        Vector2::from_polar(self.size, position) - first_character.base_vector(),
+                        Self::LETTER_SIZE,
+                    ));
                 }
                 characters.push(first_character);
 
@@ -487,13 +502,13 @@ impl GallifreyanWord {
             .collect::<GallifreyanCharacterCollection>()
             .0;
 
-
         if characters_with_edges.len() == 0 {
             return vec![draw_base(
-            Vector2::from_polar(0.0, 0.0),
-            self.size,
-            (0.0, 2.0 * PI),
-            0.0)]
+                Vector2::from_polar(0.0, 0.0),
+                self.size,
+                (0.0, 2.0 * PI),
+                0.0,
+            )];
         }
 
         let mut edges: Vec<Vec<(f32, f32)>> = characters_with_edges

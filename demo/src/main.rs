@@ -8,10 +8,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .margin(5)
         .x_label_area_size(30)
         .y_label_area_size(30)
-        .build_cartesian_2d(-10f32..10f32, -10f32..10f32)?;
+        .build_cartesian_2d(-20f32..20f32, -20f32..20f32)?;
 
     chart.configure_mesh().draw()?;
-    let gallifreyan_word = GallifreyanWord::from("ODODODO", 6.0);
+    let gallifreyan_word = GallifreyanWord::from("BOWTIESARECOOL");
 
     gallifreyan_word
         .to_gallifreyan_characters()
