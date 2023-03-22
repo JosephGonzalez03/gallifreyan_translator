@@ -388,7 +388,6 @@ pub struct GallifreyanWord {
 
 impl GallifreyanWord {
     const LETTER_SIZE: f64 = 2.0;
-    const WORD_SIZE_RATIO: f64 = 5.2;
 
     pub fn from(word: &str) -> GallifreyanWord {
         let mut grouped_letters = Vec::<String>::new();
@@ -422,21 +421,34 @@ impl GallifreyanWord {
 
         match parsed_letters {
             Ok(letters) => {
-                let num_of_letters_with_edges = letters
-                    .0
-                    .iter()
-                    .filter(|letter| !letter.is_vowel())
-                    .collect::<GallifreyanLetters>()
-                    .0
-                    .len();
+                let mut grouped_letters = Vec::<Vec<&GallifreyanLetter>>::new();
+                let mut letter_iter = letters.0.iter().peekable();
 
-                let size = match num_of_letters_with_edges {
-                    0..=1 => 2.0 * Self::LETTER_SIZE,
-                    2 => 3.0 * Self::LETTER_SIZE,
+                while let Some(current_letter) = letter_iter.next() {
+                    let entry = match current_letter.is_vowel() {
+                        true => vec![current_letter],
+                        false => match letter_iter.next_if(|next| next.is_vowel()) {
+                            Some(next_letter) => vec![current_letter, next_letter],
+                            None => vec![current_letter],
+                        },
+                    };
+
+                    grouped_letters.push(entry);
+                }
+
+                let size = match grouped_letters.len() {
+                    0..=1 => 1.5 * Self::LETTER_SIZE,
+                    2 => {
+                        (2.0 * (3.0 * Self::LETTER_SIZE))
+                            / (2.0 * (PI / grouped_letters.len() as f64).sin())
+                    }
+                    3 => {
+                        (2.0 * (2.5 * Self::LETTER_SIZE))
+                            / (2.0 * (PI / grouped_letters.len() as f64).sin())
+                    }
                     _ => {
-                        let a_angle = 2.0 * PI / num_of_letters_with_edges as f64;
-                        let c_angle = 0.5 * (PI - a_angle);
-                        Self::WORD_SIZE_RATIO * Self::LETTER_SIZE * (c_angle.sin() / a_angle.sin())
+                        (2.0 * (1.9 * Self::LETTER_SIZE))
+                            / (2.0 * (PI / grouped_letters.len() as f64).sin())
                     }
                 };
 
