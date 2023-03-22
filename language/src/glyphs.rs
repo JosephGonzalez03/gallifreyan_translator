@@ -215,23 +215,3 @@ impl GallifreyanCharacter {
         }
     }
 }
-
-pub struct GallifreyanCharacterCollection(pub Vec<GallifreyanCharacter>);
-
-impl FromIterator<GallifreyanCharacter> for GallifreyanCharacterCollection {
-    fn from_iter<T: IntoIterator<Item = GallifreyanCharacter>>(iter: T) -> Self {
-        let mut gallifreyan_characters = GallifreyanCharacterCollection::new();
-
-        for i in iter {
-            gallifreyan_characters.0.push(i)
-        }
-
-        gallifreyan_characters
-    }
-}
-
-impl GallifreyanCharacterCollection {
-    fn new() -> Self {
-        Self(Vec::new())
-    }
-}

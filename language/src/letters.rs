@@ -355,32 +355,6 @@ impl GallifreyanLetter {
     }
 }
 
-pub struct GallifreyanLetters(Vec<GallifreyanLetter>);
-
-impl FromIterator<GallifreyanLetter> for GallifreyanLetters {
-    fn from_iter<T: IntoIterator<Item = GallifreyanLetter>>(iter: T) -> Self {
-        let mut letters = Vec::new();
-
-        for i in iter {
-            letters.push(i);
-        }
-
-        Self(letters)
-    }
-}
-
-impl<'a> FromIterator<&'a GallifreyanLetter> for GallifreyanLetters {
-    fn from_iter<T: IntoIterator<Item = &'a GallifreyanLetter>>(iter: T) -> Self {
-        let mut letters = Vec::new();
-
-        for i in iter {
-            letters.push(i.to_owned());
-        }
-
-        Self(letters)
-    }
-}
-
 pub struct GallifreyanWord {
     letters: Vec<GallifreyanLetter>,
     size: f64,
@@ -417,12 +391,12 @@ impl GallifreyanWord {
         let parsed_letters = grouped_letters
             .iter()
             .map(|letter| letter.parse::<GallifreyanLetter>())
-            .collect::<Result<GallifreyanLetters, ParseGallifreyanLetterError>>();
+            .collect::<Result<Vec<GallifreyanLetter>, ParseGallifreyanLetterError>>();
 
         match parsed_letters {
             Ok(letters) => {
                 let mut grouped_letters = Vec::<Vec<&GallifreyanLetter>>::new();
-                let mut letter_iter = letters.0.iter().peekable();
+                let mut letter_iter = letters.iter().peekable();
 
                 while let Some(current_letter) = letter_iter.next() {
                     let entry = match current_letter.is_vowel() {
@@ -453,7 +427,7 @@ impl GallifreyanWord {
                 };
 
                 GallifreyanWord {
-                    letters: letters.0,
+                    letters,
                     size,
                 }
             }
@@ -503,17 +477,15 @@ impl GallifreyanWord {
 
                 characters
             })
-            .collect::<GallifreyanCharacterCollection>()
-            .0
+            .collect::<Vec<GallifreyanCharacter>>()
     }
 
     pub fn draw_edges(&self) -> Vec<Vec<(f32, f32)>> {
-        let characters_with_edges: Vec<GallifreyanCharacter> = self
+        let characters_with_edges = self
             .to_gallifreyan_characters()
             .into_iter()
             .filter(|gallifreyan_character| gallifreyan_character.has_edge())
-            .collect::<GallifreyanCharacterCollection>()
-            .0;
+            .collect::<Vec<GallifreyanCharacter>>();
 
         if characters_with_edges.len() == 0 {
             return vec![draw_base(
