@@ -412,14 +412,8 @@ impl GallifreyanWord {
 
                 let size = match grouped_letters.len() {
                     0..=1 => 1.5 * Self::LETTER_SIZE,
-                    2 => {
-                        (2.0 * (3.0 * Self::LETTER_SIZE))
-                            / (2.0 * (PI / grouped_letters.len() as f64).sin())
-                    }
-                    3 => {
-                        (2.0 * (2.5 * Self::LETTER_SIZE))
-                            / (2.0 * (PI / grouped_letters.len() as f64).sin())
-                    }
+                    2 => 2.8 * Self::LETTER_SIZE,
+                    3..=4 => 3.0 * Self::LETTER_SIZE,
                     _ => {
                         (2.0 * (1.9 * Self::LETTER_SIZE))
                             / (2.0 * (PI / grouped_letters.len() as f64).sin())
