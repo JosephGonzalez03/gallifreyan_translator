@@ -103,10 +103,7 @@ impl Base {
     }
 
     pub fn has_edge(&self) -> bool {
-        match self {
-            Base::Crescent | Base::Quarter => true,
-            _ => false,
-        }
+        matches!(self, Base::Crescent | Base::Quarter)
     }
 }
 
@@ -176,15 +173,13 @@ impl GallifreyanCharacter {
     }
 
     pub fn draw_base(&self) -> Vec<(f32, f32)> {
-        self.base.to_drawing(self.origin, self.size).to_owned()
+        self.base.to_drawing(self.origin, self.size)
     }
 
     pub fn draw_modifier(&self) -> Option<Vec<Vec<(f32, f32)>>> {
-        if let Some(modifier) = &self.modifier {
-            Some(modifier.to_drawings(self.origin - self.base_vector(), self.size))
-        } else {
-            None
-        }
+        self.modifier
+            .as_ref()
+            .map(|modifier| modifier.to_drawings(self.origin - self.base_vector(), self.size))
     }
 
     pub fn has_edge(&self) -> bool {

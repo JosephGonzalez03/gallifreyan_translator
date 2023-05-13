@@ -481,7 +481,7 @@ impl GallifreyanWord {
             .filter(|gallifreyan_character| gallifreyan_character.has_edge())
             .collect::<Vec<GallifreyanCharacter>>();
 
-        if characters_with_edges.len() == 0 {
+        if characters_with_edges.is_empty() {
             return vec![draw_base(
                 Vector2::from_polar(0.0, 0.0),
                 self.size,
