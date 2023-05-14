@@ -420,10 +420,7 @@ impl GallifreyanWord {
                     }
                 };
 
-                GallifreyanWord {
-                    letters,
-                    size,
-                }
+                GallifreyanWord { letters, size }
             }
             Err(_) => panic!("The word could not be parsed to Gallifreyan!"),
         }

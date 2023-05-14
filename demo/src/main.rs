@@ -1,7 +1,14 @@
 use language::{glyphs::*, letters::*};
 use plotters::prelude::*;
+use std::io;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    std::process::Command::new("clear").status().unwrap();
+    let mut word = String::new();
+    println!("Enter word: ");
+    io::stdin()
+        .read_line(&mut word)
+        .expect("Smart user. Valid word.");
     let root = BitMapBackend::new("0.png", (640, 640)).into_drawing_area();
     root.fill(&WHITE)?;
     let mut chart = ChartBuilder::on(&root)
@@ -11,7 +18,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .build_cartesian_2d(-20f32..20f32, -20f32..20f32)?;
 
     chart.configure_mesh().draw()?;
-    let gallifreyan_word = GallifreyanWord::from("BOWTIESARECOOL");
+    let gallifreyan_word = GallifreyanWord::from(&word.trim_end_matches("\n"));
 
     gallifreyan_word
         .to_gallifreyan_characters()
@@ -63,5 +70,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .draw_series(LineSeries::new(drawing.to_vec(), BLUE))
                 .unwrap();
         });
+    std::process::Command::new("sxiv")
+        .arg("0.png")
+        .status()
+        .unwrap();
     Ok(())
 }
