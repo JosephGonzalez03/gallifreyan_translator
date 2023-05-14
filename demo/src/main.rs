@@ -70,9 +70,5 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .draw_series(LineSeries::new(drawing.to_vec(), BLUE))
                 .unwrap();
         });
-    std::process::Command::new("sxiv")
-        .arg("0.png")
-        .status()
-        .unwrap();
     Ok(())
 }
