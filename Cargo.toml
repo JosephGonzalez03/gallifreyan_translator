@@ -3,3 +3,8 @@ members = [
     "demo",
     "language",
 ]
+
+[profile.release]
+strip = true
+codegen-units = 1
+lto = true

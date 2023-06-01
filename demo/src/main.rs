@@ -9,15 +9,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     io::stdin()
         .read_line(&mut word)
         .expect("Smart user. Valid word.");
-    let root = BitMapBackend::new("0.png", (640, 640)).into_drawing_area();
+    let root = BitMapBackend::new("gallifreyan-message.png", (640, 640)).into_drawing_area();
     root.fill(&WHITE)?;
     let mut chart = ChartBuilder::on(&root)
         .margin(5)
-        .x_label_area_size(30)
-        .y_label_area_size(30)
         .build_cartesian_2d(-20f32..20f32, -20f32..20f32)?;
 
-    chart.configure_mesh().draw()?;
     let gallifreyan_word = GallifreyanWord::from(&word.trim_end_matches("\n"));
 
     gallifreyan_word

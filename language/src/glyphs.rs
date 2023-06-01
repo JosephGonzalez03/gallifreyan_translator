@@ -14,8 +14,8 @@ pub fn draw_base(origin: Vector2, size: f64, range: (f64, f64), offset: f64) -> 
     let end_range = ((range.1 * 180.0) / PI).round() as i64;
 
     match start_range < end_range {
-        true => (start_range..=end_range),
-        false => (start_range..=end_range + 360),
+        true => start_range..=end_range,
+        false => start_range..=end_range + 360,
     }
     .map(|angle| origin + Vector2::from_polar(size, (angle as f64 * PI) / 180.0 + offset))
     .map(|vector| (vector.x as f32, vector.y as f32))
