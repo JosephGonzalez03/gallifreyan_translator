@@ -208,7 +208,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let mut word_edges: Vec<f64> = plots
                 .iter()
                 .filter(|plot| [Part::Crescent, Part::Quarter].contains(&plot.part))
-                .map(|plot| {
+                .flat_map(|plot| {
                     let edge_offset = ((LETTER_RADIUS
                         * match plot.part {
                             Part::Crescent => CRESCENT_BASE_OFFSET,
@@ -220,28 +220,26 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         .asin();
                     vec![plot.offset - edge_offset, plot.offset + edge_offset]
                 })
-                .flatten()
                 .collect();
 
-            let mut edge_plots: Vec<GPlot> = match word_edges.len() {
-                0 => vec![GPlot {
+            let mut edge_plots: Vec<GPlot> = if word_edges.len() == 0 {
+                vec![GPlot {
                     part: Part::Edge(0.0, 2.0 * PI),
                     vector: Vector2::from_polar(SENTENCE_RADIUS, word_origin),
                     radius: WORD_RADIUS,
                     offset: 0.0,
-                }],
-                1.. => {
-                    word_edges.rotate_left(1);
-                    word_edges
-                        .chunks_exact(2)
-                        .map(|edges| GPlot {
-                            part: Part::Edge(*edges.first().unwrap(), *edges.get(1).unwrap()),
-                            vector: Vector2::from_polar(SENTENCE_RADIUS, word_origin),
-                            radius: WORD_RADIUS,
-                            offset: 0.0,
-                        })
-                        .collect()
-                }
+                }]
+            } else {
+                word_edges.rotate_left(1);
+                word_edges
+                    .chunks_exact(2)
+                    .map(|edges| GPlot {
+                        part: Part::Edge(*edges.first().unwrap(), *edges.get(1).unwrap()),
+                        vector: Vector2::from_polar(SENTENCE_RADIUS, word_origin),
+                        radius: WORD_RADIUS,
+                        offset: 0.0,
+                    })
+                    .collect()
             };
 
             /* Step 5:
@@ -305,18 +303,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 )],
                 style: BLUE.stroke_width(1),
             },
-            Part::New => {
-                let base = Vector2::from_polar(DEFAULT_BASE_RATIO * plot.radius, plot.offset);
-                Drawing {
-                    series: vec![draw_base(
-                        plot.vector - base,
-                        plot.radius,
-                        (0.0, 2.0 * PI),
-                        plot.offset,
-                    )],
-                    style: BLUE.stroke_width(1),
-                }
-            }
+            Part::New => Drawing {
+                series: vec![draw_base(
+                    plot.vector,
+                    plot.radius,
+                    (0.0, 2.0 * PI),
+                    plot.offset,
+                )],
+                style: BLUE.stroke_width(1),
+            },
             Part::Dot1 => Drawing {
                 series: draw_dots(plot.vector, plot.radius, vec![0.0], plot.offset),
                 style: RED.filled(),
