@@ -208,18 +208,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let mut word_edges: Vec<f64> = plots
                 .iter()
                 .filter(|plot| [Part::Crescent, Part::Quarter].contains(&plot.part))
-                .map(|plot| match plot.part {
-                    Part::Crescent => {
-                        let edge_offset =
-                            ((LETTER_RADIUS * CRESCENT_BASE_OFFSET.sin()) / WORD_RADIUS).asin();
-                        vec![plot.offset - edge_offset, plot.offset + edge_offset]
-                    }
-                    Part::Quarter => {
-                        let edge_offset =
-                            ((LETTER_RADIUS * QUARTER_BASE_OFFSET.sin()) / WORD_RADIUS).asin();
-                        vec![plot.offset - edge_offset, plot.offset + edge_offset]
-                    }
-                    _ => panic!("Should not be here!"),
+                .map(|plot| {
+                    let edge_offset = ((LETTER_RADIUS
+                        * match plot.part {
+                            Part::Crescent => CRESCENT_BASE_OFFSET,
+                            Part::Quarter => QUARTER_BASE_OFFSET,
+                            _ => panic!("Should not be here!"),
+                        }
+                        .sin())
+                        / WORD_RADIUS)
+                        .asin();
+                    vec![plot.offset - edge_offset, plot.offset + edge_offset]
                 })
                 .flatten()
                 .collect();
