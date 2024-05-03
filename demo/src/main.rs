@@ -184,7 +184,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 GPlot {
                                     part,
                                     vector,
-                                    radius: LETTER_RADIUS,
+                                    radius: match part {
+                                        Part::Moon(_) | Part::Core => LETTER_RADIUS / 3.0,
+                                        _ => LETTER_RADIUS,
+                                    },
                                     offset: letter_origin.clone(),
                                 }
                             })
@@ -261,7 +264,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             Part::Moon(_) => Drawing {
                 series: vec![draw_base(
                     plot.vector,
-                    plot.radius / 3.0,
+                    plot.radius,
                     (0.0, 2.0 * PI),
                     plot.offset,
                 )],
@@ -270,7 +273,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             Part::Core => Drawing {
                 series: vec![draw_base(
                     plot.vector,
-                    plot.radius / 3.0,
+                    plot.radius,
                     (0.0, 2.0 * PI),
                     plot.offset,
                 )],
