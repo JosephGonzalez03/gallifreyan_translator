@@ -92,16 +92,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let mut plots: Vec<GPlot> = letters
                 .iter()
                 .scan(false, |previous_letter_is_consonant, letter| {
-                    let stand_alone_letter = !(*previous_letter_is_consonant && letter.is_vowel());
+                    let is_stand_alone_letter =
+                        !(*previous_letter_is_consonant && letter.is_vowel());
                     *previous_letter_is_consonant = !letter.is_vowel();
-                    return Some(stand_alone_letter);
+                    return Some(is_stand_alone_letter);
                 })
                 .zip(letters.iter())
                 .enumerate()
                 .scan(
                     -FRAC_PI_2,
-                    |letter_origin, (index, (stand_alone_letter, letter))| {
-                        if stand_alone_letter && index != 0 {
+                    |letter_origin, (index, (is_stand_alone_letter, letter))| {
+                        if is_stand_alone_letter && index != 0 {
                             *letter_origin += (2.0 * PI) / number_of_letter_positions;
                         }
                         let gplots: Vec<GPlot> = letter
@@ -131,7 +132,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                     Subtract the base to put the vowel base or modifier part inline with
                                     the base.
                                 */
-                                if !stand_alone_letter || part.is_modifier() {
+                                if !is_stand_alone_letter || part.is_modifier() {
                                     vector -= Vector2::from_polar(
                                         match letter
                                             .parts()
@@ -159,7 +160,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                     Subtract the consonant's base to put the vowel that follows a consonant
                                     lnline with the consonant's base.
                                 */
-                                if !stand_alone_letter && part.is_base() {
+                                if !is_stand_alone_letter && part.is_base() {
                                     vector -= Vector2::from_polar(
                                         match letters
                                             .iter()
