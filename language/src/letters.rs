@@ -1,8 +1,5 @@
-use crate::glyphs::*;
 use core::fmt;
-use geomath::prelude::coordinates::Polar;
-use geomath::vector::Vector2;
-use std::f64::consts::{FRAC_PI_2, PI};
+use std::f64::consts::PI;
 use std::fmt::Display;
 use std::str::FromStr;
 
@@ -134,216 +131,46 @@ impl FromStr for GallifreyanLetter {
 }
 
 impl GallifreyanLetter {
-    pub fn to_gallifreyan_character(&self, origin: Vector2, size: f64) -> GallifreyanCharacter {
+    pub fn parts(&self) -> Vec<Part> {
         match self {
-            GallifreyanLetter::A => GallifreyanCharacter {
-                base: Base::Moon(0.0),
-                modifier: None,
-                origin,
-                size,
-            },
-            GallifreyanLetter::E => GallifreyanCharacter {
-                base: Base::Core,
-                modifier: None,
-                origin,
-                size,
-            },
-            GallifreyanLetter::I => GallifreyanCharacter {
-                base: Base::Core,
-                modifier: Some(Modifier::VowelLine1(0.0)),
-                origin,
-                size,
-            },
-            GallifreyanLetter::O => GallifreyanCharacter {
-                base: Base::Moon(PI),
-                modifier: None,
-                origin,
-                size,
-            },
-            GallifreyanLetter::U => GallifreyanCharacter {
-                base: Base::Core,
-                modifier: Some(Modifier::VowelLine1(PI)),
-                origin,
-                size,
-            },
-            GallifreyanLetter::B => GallifreyanCharacter {
-                base: Base::Crescent,
-                modifier: None,
-                origin,
-                size,
-            },
-            GallifreyanLetter::CH => GallifreyanCharacter {
-                base: Base::Crescent,
-                modifier: Some(Modifier::Dot2),
-                origin,
-                size,
-            },
-            GallifreyanLetter::D => GallifreyanCharacter {
-                base: Base::Crescent,
-                modifier: Some(Modifier::Dot3),
-                origin,
-                size,
-            },
-            GallifreyanLetter::G => GallifreyanCharacter {
-                base: Base::Crescent,
-                modifier: Some(Modifier::Line1),
-                origin,
-                size,
-            },
-            GallifreyanLetter::H => GallifreyanCharacter {
-                base: Base::Crescent,
-                modifier: Some(Modifier::Line2),
-                origin,
-                size,
-            },
-            GallifreyanLetter::F => GallifreyanCharacter {
-                base: Base::Crescent,
-                modifier: Some(Modifier::Line3),
-                origin,
-                size,
-            },
-            GallifreyanLetter::J => GallifreyanCharacter {
-                base: Base::Full,
-                modifier: None,
-                origin,
-                size,
-            },
-            GallifreyanLetter::PH => GallifreyanCharacter {
-                base: Base::Full,
-                modifier: Some(Modifier::Dot1),
-                origin,
-                size,
-            },
-            GallifreyanLetter::K => GallifreyanCharacter {
-                base: Base::Full,
-                modifier: Some(Modifier::Dot2),
-                origin,
-                size,
-            },
-            GallifreyanLetter::L => GallifreyanCharacter {
-                base: Base::Full,
-                modifier: Some(Modifier::Dot3),
-                origin,
-                size,
-            },
-            GallifreyanLetter::C => GallifreyanCharacter {
-                base: Base::Full,
-                modifier: Some(Modifier::Dot4),
-                origin,
-                size,
-            },
-            GallifreyanLetter::N => GallifreyanCharacter {
-                base: Base::Full,
-                modifier: Some(Modifier::Line1),
-                origin,
-                size,
-            },
-            GallifreyanLetter::P => GallifreyanCharacter {
-                base: Base::Full,
-                modifier: Some(Modifier::Line2),
-                origin,
-                size,
-            },
-            GallifreyanLetter::M => GallifreyanCharacter {
-                base: Base::Full,
-                modifier: Some(Modifier::Line3),
-                origin,
-                size,
-            },
-            GallifreyanLetter::T => GallifreyanCharacter {
-                base: Base::Quarter,
-                modifier: None,
-                origin,
-                size,
-            },
-            GallifreyanLetter::WH => GallifreyanCharacter {
-                base: Base::Quarter,
-                modifier: Some(Modifier::Dot1),
-                origin,
-                size,
-            },
-            GallifreyanLetter::SH => GallifreyanCharacter {
-                base: Base::Quarter,
-                modifier: Some(Modifier::Dot2),
-                origin,
-                size,
-            },
-            GallifreyanLetter::R => GallifreyanCharacter {
-                base: Base::Quarter,
-                modifier: Some(Modifier::Dot3),
-                origin,
-                size,
-            },
-            GallifreyanLetter::V => GallifreyanCharacter {
-                base: Base::Quarter,
-                modifier: Some(Modifier::Line1),
-                origin,
-                size,
-            },
-            GallifreyanLetter::W => GallifreyanCharacter {
-                base: Base::Quarter,
-                modifier: Some(Modifier::Line2),
-                origin,
-                size,
-            },
-            GallifreyanLetter::S => GallifreyanCharacter {
-                base: Base::Quarter,
-                modifier: Some(Modifier::Line3),
-                origin,
-                size,
-            },
-            GallifreyanLetter::TH => GallifreyanCharacter {
-                base: Base::New,
-                modifier: None,
-                origin,
-                size,
-            },
-            GallifreyanLetter::GH => GallifreyanCharacter {
-                base: Base::New,
-                modifier: Some(Modifier::Dot1),
-                origin,
-                size,
-            },
-            GallifreyanLetter::Y => GallifreyanCharacter {
-                base: Base::New,
-                modifier: Some(Modifier::Dot2),
-                origin,
-                size,
-            },
-            GallifreyanLetter::Z => GallifreyanCharacter {
-                base: Base::New,
-                modifier: Some(Modifier::Dot3),
-                origin,
-                size,
-            },
-            GallifreyanLetter::Q => GallifreyanCharacter {
-                base: Base::New,
-                modifier: Some(Modifier::Dot4),
-                origin,
-                size,
-            },
-            GallifreyanLetter::QU => GallifreyanCharacter {
-                base: Base::New,
-                modifier: Some(Modifier::Line1),
-                origin,
-                size,
-            },
-            GallifreyanLetter::X => GallifreyanCharacter {
-                base: Base::New,
-                modifier: Some(Modifier::Line2),
-                origin,
-                size,
-            },
-            GallifreyanLetter::NG => GallifreyanCharacter {
-                base: Base::New,
-                modifier: Some(Modifier::Line3),
-                origin,
-                size,
-            },
+            GallifreyanLetter::A => vec![Part::Moon(PI)],
+            GallifreyanLetter::E => vec![Part::Core],
+            GallifreyanLetter::I => vec![Part::Core, Part::VowelLine1(0.0)],
+            GallifreyanLetter::O => vec![Part::Moon(0.0)],
+            GallifreyanLetter::U => vec![Part::Core, Part::VowelLine1(PI)],
+            GallifreyanLetter::B => vec![Part::Crescent],
+            GallifreyanLetter::CH => vec![Part::Crescent, Part::Dot2],
+            GallifreyanLetter::D => vec![Part::Crescent, Part::Dot3],
+            GallifreyanLetter::G => vec![Part::Crescent, Part::Line1],
+            GallifreyanLetter::H => vec![Part::Crescent, Part::Line2],
+            GallifreyanLetter::F => vec![Part::Crescent, Part::Line3],
+            GallifreyanLetter::J => vec![Part::Full],
+            GallifreyanLetter::PH => vec![Part::Full, Part::Dot1],
+            GallifreyanLetter::K => vec![Part::Full, Part::Dot2],
+            GallifreyanLetter::L => vec![Part::Full, Part::Dot3],
+            GallifreyanLetter::C => vec![Part::Full, Part::Dot4],
+            GallifreyanLetter::N => vec![Part::Full, Part::Line1],
+            GallifreyanLetter::P => vec![Part::Full, Part::Line2],
+            GallifreyanLetter::M => vec![Part::Full, Part::Line3],
+            GallifreyanLetter::T => vec![Part::Quarter],
+            GallifreyanLetter::WH => vec![Part::Quarter, Part::Dot1],
+            GallifreyanLetter::SH => vec![Part::Quarter, Part::Dot2],
+            GallifreyanLetter::R => vec![Part::Quarter, Part::Dot3],
+            GallifreyanLetter::V => vec![Part::Quarter, Part::Line1],
+            GallifreyanLetter::W => vec![Part::Quarter, Part::Line2],
+            GallifreyanLetter::S => vec![Part::Quarter, Part::Line3],
+            GallifreyanLetter::TH => vec![Part::New],
+            GallifreyanLetter::GH => vec![Part::New, Part::Dot1],
+            GallifreyanLetter::Y => vec![Part::New, Part::Dot2],
+            GallifreyanLetter::Z => vec![Part::New, Part::Dot3],
+            GallifreyanLetter::Q => vec![Part::New, Part::Dot4],
+            GallifreyanLetter::QU => vec![Part::New, Part::Line1],
+            GallifreyanLetter::X => vec![Part::New, Part::Line2],
+            GallifreyanLetter::NG => vec![Part::New, Part::Line3],
         }
     }
 
-    fn is_vowel(&self) -> bool {
+    pub fn is_vowel(&self) -> bool {
         matches!(
             self,
             GallifreyanLetter::A
@@ -355,181 +182,66 @@ impl GallifreyanLetter {
     }
 }
 
-pub struct GallifreyanWord {
-    letters: Vec<GallifreyanLetter>,
-    size: f64,
+#[derive(Clone, Copy, PartialEq)]
+pub enum Part {
+    Moon(f64),
+    Core,
+    Crescent,
+    Full,
+    Quarter,
+    New,
+    Dot1,
+    Dot2,
+    Dot3,
+    Dot4,
+    VowelLine1(f64),
+    Line1,
+    Line2,
+    Line3,
+    Edge(f64, f64),
 }
 
-impl GallifreyanWord {
-    const LETTER_SIZE: f64 = 2.0;
-
-    pub fn from(word: &str) -> GallifreyanWord {
-        let mut grouped_letters = Vec::<String>::new();
-        let mut char_iter = word.chars().into_iter().peekable();
-
-        while let Some(current_letter) = char_iter.next() {
-            let entry = match current_letter.to_ascii_uppercase() {
-                'C' | 'P' | 'W' | 'S' | 'T' | 'G' => match char_iter.next_if_eq(&'H') {
-                    Some(next_letter) => current_letter.to_string() + &next_letter.to_string(),
-                    None => current_letter.to_string(),
-                },
-                'Q' => match char_iter.next_if_eq(&'U') {
-                    Some(next_letter) => current_letter.to_string() + &next_letter.to_string(),
-                    None => current_letter.to_string(),
-                },
-                'N' => match char_iter.next_if_eq(&'G') {
-                    Some(next_letter) => current_letter.to_string() + &next_letter.to_string(),
-                    None => current_letter.to_string(),
-                },
-                _ => current_letter.to_string(),
-            };
-
-            grouped_letters.push(entry);
-        }
-
-        grouped_letters.iter().for_each(|gl| println!("{}", gl));
-        let parsed_letters = grouped_letters
-            .iter()
-            .map(|letter| letter.parse::<GallifreyanLetter>())
-            .collect::<Result<Vec<GallifreyanLetter>, ParseGallifreyanLetterError>>();
-
-        match parsed_letters {
-            Ok(letters) => {
-                let mut consonant_vowel_groups = Vec::<Vec<&GallifreyanLetter>>::new();
-                let mut letter_iter = letters.iter().peekable();
-
-                while let Some(current_letter) = letter_iter.next() {
-                    let entry = match current_letter.is_vowel() {
-                        true => vec![current_letter],
-                        false => match letter_iter.next_if(|next| next.is_vowel()) {
-                            Some(next_letter) => vec![current_letter, next_letter],
-                            None => vec![current_letter],
-                        },
-                    };
-
-                    consonant_vowel_groups.push(entry);
-                }
-
-                let size = match consonant_vowel_groups.len() {
-                    0..=1 => 1.5 * Self::LETTER_SIZE,
-                    2 => 2.8 * Self::LETTER_SIZE,
-                    3..=4 => 3.0 * Self::LETTER_SIZE,
-                    _ => {
-                        (2.0 * (1.9 * Self::LETTER_SIZE))
-                            / (2.0 * (PI / consonant_vowel_groups.len() as f64).sin())
-                    }
-                };
-
-                GallifreyanWord { letters, size }
-            }
-            Err(_) => panic!("The word could not be parsed to Gallifreyan!"),
+impl Display for Part {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Part::Moon(_) => write!(f, "Moon"),
+            Part::Core => write!(f, "Core"),
+            Part::Crescent => write!(f, "Crescent"),
+            Part::Full => write!(f, "Full"),
+            Part::Quarter => write!(f, "Quarter"),
+            Part::New => write!(f, "New"),
+            Part::Dot1 => write!(f, "Dot1"),
+            Part::Dot2 => write!(f, "Dot2"),
+            Part::Dot3 => write!(f, "Dot3"),
+            Part::Dot4 => write!(f, "Dot4"),
+            Part::VowelLine1(_) => write!(f, "VowelLine1"),
+            Part::Line1 => write!(f, "Line1"),
+            Part::Line2 => write!(f, "Line2"),
+            Part::Line3 => write!(f, "Line3"),
+            Part::Edge(_, _) => write!(f, "Edge"),
         }
     }
+}
 
-    pub fn to_gallifreyan_characters(&self) -> Vec<GallifreyanCharacter> {
-        let mut grouped_letters = Vec::new();
-        let mut letter_iter = self.letters.iter().peekable();
-
-        while let Some(current_letter) = letter_iter.next() {
-            let entry = match current_letter.is_vowel() {
-                true => vec![current_letter],
-                false => match letter_iter.next_if(|next| next.is_vowel()) {
-                    Some(next_letter) => vec![current_letter, next_letter],
-                    None => vec![current_letter],
-                },
-            };
-
-            grouped_letters.push(entry);
-        }
-
-        let step_size: f64 = 2.0 * PI / grouped_letters.iter().map(|_| 1.0).sum::<f64>();
-
-        grouped_letters
-            .iter()
-            .enumerate()
-            .flat_map(|(index, group)| {
-                let position = (index as f64 * step_size) - FRAC_PI_2;
-                let mut characters = Vec::new();
-                let first_character = group
-                    .get(0)
-                    .expect("There should be at least one letter in each group.")
-                    .to_gallifreyan_character(
-                        Vector2::from_polar(self.size, position),
-                        Self::LETTER_SIZE,
-                    );
-
-                if let Some(letter) = group.get(1) {
-                    characters.push(letter.to_gallifreyan_character(
-                        Vector2::from_polar(self.size, position) - first_character.base_vector(),
-                        Self::LETTER_SIZE,
-                    ));
-                }
-                characters.push(first_character);
-
-                characters
-            })
-            .collect::<Vec<GallifreyanCharacter>>()
+impl Part {
+    pub fn is_base(&self) -> bool {
+        matches!(
+            self,
+            Part::Crescent | Part::Full | Part::Core | Part::Quarter | Part::New | Part::Moon(_)
+        )
     }
 
-    pub fn draw_edges(&self) -> Vec<Vec<(f32, f32)>> {
-        let characters_with_edges = self
-            .to_gallifreyan_characters()
-            .into_iter()
-            .filter(|gallifreyan_character| gallifreyan_character.has_edge())
-            .collect::<Vec<GallifreyanCharacter>>();
-
-        if characters_with_edges.is_empty() {
-            return vec![draw_base(
-                Vector2::from_polar(0.0, 0.0),
-                self.size,
-                (0.0, 2.0 * PI),
-                0.0,
-            )];
-        }
-
-        let mut edges: Vec<Vec<(f32, f32)>> = characters_with_edges
-            .as_slice()
-            .windows(2)
-            .map(|letters| {
-                let edge1 = letters[0]
-                    .ending_angle()
-                    .expect("The Gallifreyan character should have an edge.");
-                let edge2 = letters[1]
-                    .starting_angle()
-                    .expect("The Gallifreyan character should have an edge.");
-
-                draw_base(
-                    Vector2::from_polar(0.0, 0.0),
-                    letters[0].origin.rho(),
-                    (edge1, edge2),
-                    0.0,
-                )
-            })
-            .collect();
-
-        let edge1 = characters_with_edges
-            .last()
-            .expect("The character should exist.")
-            .ending_angle()
-            .expect("The Gallifreyan character should have an edge.");
-        let edge2 = match characters_with_edges.first() {
-            Some(character) => character
-                .starting_angle()
-                .expect("The Gallifreyan character should have an edge."),
-            None => characters_with_edges
-                .last()
-                .expect("The character should exist.")
-                .starting_angle()
-                .expect("The Gallifreyan character should have an edge."),
-        };
-
-        edges.push(draw_base(
-            Vector2::from_polar(0.0, 0.0),
-            self.size,
-            (edge1, edge2),
-            0.0,
-        ));
-
-        edges
+    pub fn is_modifier(&self) -> bool {
+        matches!(
+            self,
+            Part::Dot1
+                | Part::Dot2
+                | Part::Dot3
+                | Part::Dot4
+                | Part::Line1
+                | Part::Line2
+                | Part::Line3
+                | Part::VowelLine1(_)
+        )
     }
 }
