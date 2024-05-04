@@ -49,10 +49,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let word_origin = (((2.0 * PI) / word_count) * index as f64) - FRAC_PI_2;
 
             /* Step 1:
-                Parse each letter in a word into a Gallifreyan token. Keep in mind that some
-                Gallifreyan letter combine two english letters.
+                Parse each character in a word into a Gallifreyan token. Keep in mind that some
+                Gallifreyan letters combine two english letters.
             */
-            let mut letters: Vec<GallifreyanLetter> = Vec::new();
+            let mut tokens: Vec<GallifreyanToken> = Vec::new();
             let mut char_iter = word.chars().into_iter().peekable();
 
             while let Some(current_letter) = char_iter.next() {
@@ -65,15 +65,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 } else {
                     current_letter.to_string()
                 };
-                letters.push(GallifreyanLetter::from_str(letter.as_str()).unwrap());
+                tokens.push(GallifreyanToken::from_str(letter.as_str()).unwrap());
             }
 
             /* Step 2:
                 Determine the positions of the letters on the circle. Keep in mind that vowels
                 that follow a consonant are placed on the consonant.
             */
-            let number_of_letter_positions: f64 = letters
+            let number_of_letter_positions: f64 = tokens
                 .iter()
+                .filter(|token| token.is_letter())
                 .scan(false, |previous_letter_is_consonant, letter| {
                     let result = if *previous_letter_is_consonant && letter.is_vowel() {
                         0.0
@@ -89,7 +90,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 Decompose the letters from (1) into their parts and their positions vectors with the
                 number of positions from (2).
             */
-            let mut plots: Vec<GPlot> = letters
+            let mut plots: Vec<GPlot> = tokens
                 .iter()
                 .scan(false, |previous_letter_is_consonant, letter| {
                     let is_stand_alone_letter =
@@ -97,15 +98,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     *previous_letter_is_consonant = !letter.is_vowel();
                     return Some(is_stand_alone_letter);
                 })
-                .zip(letters.iter())
+                .zip(tokens.iter())
                 .enumerate()
                 .scan(
                     -FRAC_PI_2,
-                    |letter_origin, (index, (is_stand_alone_letter, letter))| {
+                    |letter_origin, (index, (is_stand_alone_letter, token))| {
                         if is_stand_alone_letter && index != 0 {
                             *letter_origin += (2.0 * PI) / number_of_letter_positions;
                         }
-                        let gplots: Vec<GPlot> = letter
+                        let gplots: Vec<GPlot> = token
                             .parts()
                             .into_iter()
                             .map(|part| {
@@ -134,7 +135,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 */
                                 if !is_stand_alone_letter || part.is_modifier() {
                                     vector -= Vector2::from_polar(
-                                        match letter
+                                        match token
                                             .parts()
                                             .into_iter()
                                             .filter(|part| part.is_base())
@@ -162,7 +163,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 */
                                 if !is_stand_alone_letter && part.is_base() {
                                     vector -= Vector2::from_polar(
-                                        match letters
+                                        match tokens
                                             .iter()
                                             .nth(index - 1)
                                             .unwrap()
@@ -193,7 +194,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                             })
                             .collect();
                         gplots.iter().for_each(|plot| {
-                            println!("{}: {}, {}", letter, plot.vector.rho(), plot.vector.phi());
+                            println!("{}: {}, {}", token, plot.vector.rho(), plot.vector.phi());
                         });
                         Some(gplots)
                     },
