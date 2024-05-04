@@ -92,10 +92,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             */
             let mut plots: Vec<GPlot> = tokens
                 .iter()
-                .scan(false, |previous_letter_is_consonant, letter| {
+                .scan(false, |previous_letter_is_consonant, token| {
                     let is_stand_alone_letter =
-                        !(*previous_letter_is_consonant && letter.is_vowel());
-                    *previous_letter_is_consonant = !letter.is_vowel();
+                        !(*previous_letter_is_consonant && token.is_vowel());
+                    *previous_letter_is_consonant = !token.is_vowel();
                     return Some(is_stand_alone_letter);
                 })
                 .zip(tokens.iter())
