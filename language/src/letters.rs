@@ -238,6 +238,7 @@ pub enum Part {
     Line1,
     Line2,
     Line3,
+    Notch,
     Edge(f64, f64),
 }
 
@@ -258,6 +259,7 @@ impl Display for Part {
             Part::Line1 => write!(f, "Line1"),
             Part::Line2 => write!(f, "Line2"),
             Part::Line3 => write!(f, "Line3"),
+            Part::Notch => write!(f, "Notch"),
             Part::Edge(_, _) => write!(f, "Edge"),
         }
     }
@@ -267,7 +269,13 @@ impl Part {
     pub fn is_base(&self) -> bool {
         matches!(
             self,
-            Part::Crescent | Part::Full | Part::Core | Part::Quarter | Part::New | Part::Moon(_)
+            Part::Crescent
+                | Part::Full
+                | Part::Core
+                | Part::Quarter
+                | Part::New
+                | Part::Moon(_)
+                | Part::Notch
         )
     }
 

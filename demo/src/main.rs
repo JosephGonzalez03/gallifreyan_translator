@@ -1,7 +1,10 @@
 use geomath::prelude::coordinates::Polar;
 use geomath::vector::Vector2;
 use language::letters::*;
-use plotters::{prelude::*, style::full_palette::BLUE};
+use plotters::{
+    prelude::*,
+    style::full_palette::{BLUE, BROWN},
+};
 use std::{
     f64::consts::{FRAC_PI_2, FRAC_PI_4, FRAC_PI_6, FRAC_PI_8, PI},
     io,
@@ -40,7 +43,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .build_cartesian_2d(-20f32..20f32, -20f32..20f32)?;
     chart.configure_mesh().draw()?;
     let word_count: f64 = word.split_terminator(" ").map(|_| 1.0).sum();
-    word.to_uppercase()
+    let notch_offset: f64 = PI / word_count;
+
+    // Create word and letter plots.
+    let mut sentence_plots: Vec<GPlot> = word
+        .to_uppercase()
         .replace("\n", "")
         .split_terminator(" ")
         .into_iter()
@@ -106,19 +113,47 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         if is_stand_alone_letter && index != 0 {
                             *letter_origin += (2.0 * PI) / number_of_letter_positions;
                         }
-                        let gplots: Vec<GPlot> = token
-                            .parts()
-                            .into_iter()
-                            .map(|part| {
-                                // Calculate the vector with respect to the sentence, word, and letter.
-                                let mut vector: Vector2 =
-                                    Vector2::from_polar(SENTENCE_RADIUS, word_origin)
-                                        + Vector2::from_polar(WORD_RADIUS, *letter_origin)
-                                        - Vector2::from_polar(
-                                            match part {
+
+                        let gplots: Vec<GPlot> = if token.is_letter() {
+                            token
+                                .parts()
+                                .into_iter()
+                                .map(|part| {
+                                    // Calculate the vector with respect to the sentence, word, and letter.
+                                    let mut vector: Vector2 =
+                                        Vector2::from_polar(SENTENCE_RADIUS, word_origin)
+                                            + Vector2::from_polar(WORD_RADIUS, *letter_origin)
+                                            - Vector2::from_polar(
+                                                match part {
+                                                    Part::Crescent => CRESCENT_BASE_RATIO,
+                                                    Part::Full => FULL_BASE_RATIO,
+                                                    Part::Moon(_) => 0.0,
+                                                    _ => DEFAULT_BASE_RATIO,
+                                                } * LETTER_RADIUS,
+                                                letter_origin.as_f64()
+                                                    + match part {
+                                                        Part::Moon(offset)
+                                                        | Part::VowelLine1(offset) => offset,
+                                                        _ => 0.0,
+                                                    },
+                                            );
+
+                                    /*
+                                        Subtract the base to put the vowel base or modifier part inline with
+                                        the base.
+                                    */
+                                    if !is_stand_alone_letter || part.is_modifier() {
+                                        vector -= Vector2::from_polar(
+                                            match token
+                                                .parts()
+                                                .into_iter()
+                                                .filter(|part| part.is_base())
+                                                .nth(0)
+                                                .unwrap()
+                                            {
                                                 Part::Crescent => CRESCENT_BASE_RATIO,
                                                 Part::Full => FULL_BASE_RATIO,
-                                                Part::Moon(_) => 0.0,
+                                                Part::Moon(_) => MOON_BASE_RATIO,
                                                 _ => DEFAULT_BASE_RATIO,
                                             } * LETTER_RADIUS,
                                             letter_origin.as_f64()
@@ -128,74 +163,74 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                                     _ => 0.0,
                                                 },
                                         );
+                                    }
 
-                                /*
-                                    Subtract the base to put the vowel base or modifier part inline with
-                                    the base.
-                                */
-                                if !is_stand_alone_letter || part.is_modifier() {
-                                    vector -= Vector2::from_polar(
-                                        match token
-                                            .parts()
-                                            .into_iter()
-                                            .filter(|part| part.is_base())
-                                            .nth(0)
-                                            .unwrap()
-                                        {
-                                            Part::Crescent => CRESCENT_BASE_RATIO,
-                                            Part::Full => FULL_BASE_RATIO,
-                                            Part::Moon(_) => MOON_BASE_RATIO,
-                                            _ => DEFAULT_BASE_RATIO,
-                                        } * LETTER_RADIUS,
-                                        letter_origin.as_f64()
-                                            + match part {
-                                                Part::Moon(offset) | Part::VowelLine1(offset) => {
-                                                    offset
-                                                }
-                                                _ => 0.0,
-                                            },
-                                    );
-                                }
+                                    /*
+                                        Subtract the consonant's base to put the vowel that follows a consonant
+                                        lnline with the consonant's base.
+                                    */
+                                    if !is_stand_alone_letter && part.is_base() {
+                                        vector -= Vector2::from_polar(
+                                            match tokens
+                                                .iter()
+                                                .nth(index - 1)
+                                                .unwrap()
+                                                .parts()
+                                                .into_iter()
+                                                .filter(|part| part.is_base())
+                                                .nth(0)
+                                                .unwrap()
+                                            {
+                                                Part::Crescent => CRESCENT_BASE_RATIO,
+                                                Part::Full => FULL_BASE_RATIO,
+                                                Part::Moon(_) => MOON_BASE_RATIO,
+                                                _ => DEFAULT_BASE_RATIO,
+                                            } * LETTER_RADIUS,
+                                            letter_origin.as_f64(),
+                                        )
+                                    }
 
-                                /*
-                                    Subtract the consonant's base to put the vowel that follows a consonant
-                                    lnline with the consonant's base.
-                                */
-                                if !is_stand_alone_letter && part.is_base() {
-                                    vector -= Vector2::from_polar(
-                                        match tokens
-                                            .iter()
-                                            .nth(index - 1)
-                                            .unwrap()
-                                            .parts()
-                                            .into_iter()
-                                            .filter(|part| part.is_base())
-                                            .nth(0)
-                                            .unwrap()
-                                        {
-                                            Part::Crescent => CRESCENT_BASE_RATIO,
-                                            Part::Full => FULL_BASE_RATIO,
-                                            Part::Moon(_) => MOON_BASE_RATIO,
-                                            _ => DEFAULT_BASE_RATIO,
-                                        } * LETTER_RADIUS,
-                                        letter_origin.as_f64(),
-                                    )
-                                }
+                                    GPlot {
+                                        part,
+                                        vector,
+                                        radius: match part {
+                                            Part::Moon(_) | Part::Core => LETTER_RADIUS / 3.0,
+                                            _ => LETTER_RADIUS,
+                                        },
+                                        offset: letter_origin.clone(),
+                                    }
+                                })
+                                .collect()
+                        } else {
+                            token
+                                .parts()
+                                .into_iter()
+                                .map(|part| {
+                                    // Calculate the vector with respect to the sentence, word, and letter.
+                                    let vector: Vector2 =
+                                        Vector2::from_polar(SENTENCE_RADIUS, word_origin)
+                                            - Vector2::from_polar(
+                                                NOTCH_BASE_RATIO * WORD_RADIUS,
+                                                letter_origin.as_f64()
+                                                    + match part {
+                                                        Part::Moon(offset)
+                                                        | Part::VowelLine1(offset) => offset,
+                                                        _ => 0.0,
+                                                    },
+                                            );
 
-                                GPlot {
-                                    part,
-                                    vector,
-                                    radius: match part {
-                                        Part::Moon(_) | Part::Core => LETTER_RADIUS / 3.0,
-                                        _ => LETTER_RADIUS,
-                                    },
-                                    offset: letter_origin.clone(),
-                                }
-                            })
-                            .collect();
-                        gplots.iter().for_each(|plot| {
-                            println!("{}: {}, {}", token, plot.vector.rho(), plot.vector.phi());
-                        });
+                                    GPlot {
+                                        part,
+                                        vector,
+                                        radius: match part {
+                                            Part::Moon(_) | Part::Core => LETTER_RADIUS / 3.0,
+                                            _ => LETTER_RADIUS,
+                                        },
+                                        offset: letter_origin.clone(),
+                                    }
+                                })
+                                .collect()
+                        };
                         Some(gplots)
                     },
                 )
@@ -244,11 +279,70 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             };
 
             /* Step 5:
+                Add notch between current and next words on the inner sentence circle.
+            */
+            plots.push(GPlot {
+                part: Part::Notch,
+                vector: Vector2::from_polar(
+                    INNER_CIRCLE_RATIO * SENTENCE_RADIUS,
+                    word_origin + notch_offset,
+                ) - Vector2::from_polar(
+                    NOTCH_BASE_RATIO * WORD_RADIUS,
+                    word_origin + notch_offset,
+                ),
+                radius: WORD_RADIUS,
+                offset: word_origin + notch_offset + PI,
+            });
+
+            /* Step 6:
                 Add edge plots to the plots collection and return all of them from this function.
             */
             plots.append(&mut edge_plots);
             plots
         })
+        .collect();
+
+    // Create inner sentence circle plots.
+    let mut sentence_edges: Vec<f64> = sentence_plots
+        .iter()
+        .filter(|plot| plot.part == Part::Notch)
+        .flat_map(|plot| {
+            let sentence_notch_offset = ((WORD_RADIUS * NOTCH_BASE_OFFSET.sin())
+                / (INNER_CIRCLE_RATIO * SENTENCE_RADIUS))
+                .asin();
+            vec![
+                plot.offset - sentence_notch_offset,
+                plot.offset + sentence_notch_offset,
+            ]
+        })
+        .collect();
+    sentence_edges.rotate_left(1);
+    let mut sentence_edge_plots: Vec<GPlot> = sentence_edges
+        .chunks_exact(2)
+        .scan(0.0, |word_origin, edges| {
+            let notch_edge = GPlot {
+                part: Part::Edge(*edges.first().unwrap(), *edges.get(1).unwrap()),
+                vector: Vector2::from_polar(0.0, *word_origin),
+                radius: INNER_CIRCLE_RATIO * SENTENCE_RADIUS,
+                offset: 0.0,
+            };
+            *word_origin += (2.0 * PI) / word_count;
+            Some(notch_edge)
+        })
+        .collect();
+
+    // Create outer sentence circle plots.
+    sentence_plots.push(GPlot {
+        part: Part::New,
+        vector: Vector2::from_polar(0.0, 0.0),
+        radius: OUTTER_CIRCLE_RATIO * SENTENCE_RADIUS,
+        offset: 0.0,
+    });
+    sentence_plots.append(&mut sentence_edge_plots);
+
+    // Draw plots.
+    sentence_plots
+        .into_iter()
         .map(|plot| match plot.part {
             Part::Edge(start, end) => Drawing {
                 series: vec![draw_base(
@@ -375,6 +469,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 ),
                 style: BLUE.stroke_width(1),
             },
+            Part::Notch => Drawing {
+                series: vec![draw_base(
+                    plot.vector,
+                    plot.radius,
+                    (-NOTCH_BASE_OFFSET, NOTCH_BASE_OFFSET),
+                    plot.offset,
+                )],
+                style: BROWN.stroke_width(1),
+            },
         })
         .for_each(|drawing| {
             drawing.series.into_iter().for_each(|points| {
@@ -392,10 +495,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
+const INNER_CIRCLE_RATIO: f64 = 1.6;
+const OUTTER_CIRCLE_RATIO: f64 = 1.8;
+const NOTCH_BASE_RATIO: f64 = 0.15;
 const CRESCENT_BASE_RATIO: f64 = 0.9;
 const FULL_BASE_RATIO: f64 = 1.2;
 const MOON_BASE_RATIO: f64 = 1.0;
 const DEFAULT_BASE_RATIO: f64 = 0.0;
+const NOTCH_BASE_OFFSET: f64 = FRAC_PI_2;
 const CRESCENT_BASE_OFFSET: f64 = FRAC_PI_6;
 const QUARTER_BASE_OFFSET: f64 = 5.0 * PI / 9.0;
 const DOT_OFFSET: f64 = 0.4;
