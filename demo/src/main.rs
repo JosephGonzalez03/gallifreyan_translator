@@ -184,7 +184,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                         part,
                                         vector,
                                         radius: match part {
-                                            Part::Moon(_) | Part::Core => LETTER_RADIUS / 3.0,
+                                            Part::Moon(_) | Part::Core | Part::VowelLine1(_) => {
+                                                LETTER_RADIUS / 3.0
+                                            }
                                             _ => LETTER_RADIUS,
                                         },
                                         offset: letter_origin.clone(),
@@ -429,12 +431,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 style: RED.filled(),
             },
             Part::VowelLine1(offset) => Drawing {
-                series: draw_lines(
-                    plot.vector,
-                    plot.radius / 3.0,
-                    vec![0.0],
-                    plot.offset + offset,
-                ),
+                series: draw_lines(plot.vector, plot.radius, vec![0.0], plot.offset + offset),
                 style: BLUE.stroke_width(1),
             },
             Part::Line1 => Drawing {
