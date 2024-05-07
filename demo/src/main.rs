@@ -130,12 +130,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                                     Part::Moon(_) => 0.0,
                                                     _ => DEFAULT_BASE_RATIO,
                                                 } * LETTER_RADIUS,
-                                                letter_origin.as_f64()
-                                                    + match part {
-                                                        Part::Moon(offset)
-                                                        | Part::VowelLine1(offset) => offset,
-                                                        _ => 0.0,
-                                                    },
+                                                letter_origin.as_f64(),
                                             );
 
                                     /*
@@ -156,12 +151,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                                 Part::Moon(_) => MOON_BASE_RATIO,
                                                 _ => DEFAULT_BASE_RATIO,
                                             } * LETTER_RADIUS,
-                                            letter_origin.as_f64()
-                                                + match part {
-                                                    Part::Moon(offset)
-                                                    | Part::VowelLine1(offset) => offset,
-                                                    _ => 0.0,
-                                                },
+                                            letter_origin.as_f64(),
                                         );
                                     }
 
