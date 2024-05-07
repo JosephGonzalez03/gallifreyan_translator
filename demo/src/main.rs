@@ -82,13 +82,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let number_of_letter_positions: f64 = tokens
                 .iter()
                 .filter(|token| token.is_letter())
-                .scan(false, |previous_letter_is_consonant, letter| {
-                    let result = if *previous_letter_is_consonant && letter.is_vowel() {
+                .scan(false, |is_previous_letter_a_consonant, letter| {
+                    let result = if *is_previous_letter_a_consonant && letter.is_vowel() {
                         0.0
                     } else {
                         1.0
                     };
-                    *previous_letter_is_consonant = !letter.is_vowel();
+                    *is_previous_letter_a_consonant = !letter.is_vowel();
                     return Some(result);
                 })
                 .sum();
@@ -99,10 +99,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             */
             let mut plots: Vec<GPlot> = tokens
                 .iter()
-                .scan(false, |previous_letter_is_consonant, token| {
+                .scan(false, |is_previous_letter_a_consonant, token| {
                     let is_stand_alone_letter =
-                        !(*previous_letter_is_consonant && token.is_vowel());
-                    *previous_letter_is_consonant = !token.is_vowel();
+                        !(*is_previous_letter_a_consonant && token.is_vowel());
+                    *is_previous_letter_a_consonant = !token.is_vowel();
                     return Some(is_stand_alone_letter);
                 })
                 .zip(tokens.iter())
