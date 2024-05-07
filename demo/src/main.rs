@@ -194,7 +194,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                     // Calculate the vector with respect to the sentence, word, and letter.
                                     let word_radius = NOTCH_BASE_RATIO * WORD_RADIUS;
 
-                                    // Calculate the vector with respect to the sentence, word, and letter.
                                     GPlot {
                                         part,
                                         vector: Vector2::from_polar(SENTENCE_RADIUS, word_origin)
