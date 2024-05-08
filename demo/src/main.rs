@@ -132,7 +132,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                         the base.
                                     */
                                     if !is_stand_alone_letter || part.is_modifier() {
-                                        letter_radius -= match token
+                                        letter_radius += match token
                                             .parts()
                                             .into_iter()
                                             .filter(|part| part.is_base())
@@ -151,7 +151,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                         lnline with the consonant's base.
                                     */
                                     if !is_stand_alone_letter && part.is_base() {
-                                        letter_radius -= match tokens
+                                        letter_radius += match tokens
                                             .iter()
                                             .nth(index - 1)
                                             .unwrap()
