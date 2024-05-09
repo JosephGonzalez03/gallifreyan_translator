@@ -11,7 +11,7 @@ use std::{
     str::FromStr,
 };
 
-struct GPlot {
+struct Plot {
     part: Part,
     vector: Vector2,
     radius: f64,
@@ -46,7 +46,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let notch_offset: f64 = PI / word_count;
 
     // Create word and letter plots.
-    let mut sentence_plots: Vec<GPlot> = word
+    let mut sentence_plots: Vec<Plot> = word
         .to_uppercase()
         .replace("\n", "")
         .split_terminator(" ")
@@ -97,7 +97,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 Decompose the letters from (1) into their parts and their positions vectors with the
                 number of positions from (2).
             */
-            let mut plots: Vec<GPlot> = tokens
+            let mut plots: Vec<Plot> = tokens
                 .iter()
                 .scan(false, |is_previous_letter_a_consonant, token| {
                     let is_stand_alone_letter =
@@ -114,7 +114,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                             *letter_origin += (2.0 * PI) / number_of_letter_positions;
                         }
 
-                        let gplots: Vec<GPlot> = if token.is_letter() {
+                        let gplots: Vec<Plot> = if token.is_letter() {
                             token
                                 .parts()
                                 .into_iter()
@@ -177,7 +177,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                         );
                                     }
 
-                                    GPlot {
+                                    Plot {
                                         part,
                                         vector: Vector2::from_polar(SENTENCE_RADIUS, word_origin)
                                             + Vector2::from_polar(WORD_RADIUS, *letter_origin)
@@ -200,7 +200,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                     // Calculate the vector with respect to the sentence, word, and letter.
                                     let word_radius = NOTCH_BASE_RATIO * WORD_RADIUS;
 
-                                    GPlot {
+                                    Plot {
                                         part,
                                         vector: Vector2::from_polar(SENTENCE_RADIUS, word_origin)
                                             - Vector2::from_polar(
@@ -248,8 +248,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 })
                 .collect();
 
-            let mut edge_plots: Vec<GPlot> = if word_edges.len() == 0 {
-                vec![GPlot {
+            let mut edge_plots: Vec<Plot> = if word_edges.len() == 0 {
+                vec![Plot {
                     part: Part::Edge(0.0, 2.0 * PI),
                     vector: Vector2::from_polar(SENTENCE_RADIUS, word_origin),
                     radius: WORD_RADIUS,
@@ -259,7 +259,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 word_edges.rotate_left(1);
                 word_edges
                     .chunks_exact(2)
-                    .map(|edges| GPlot {
+                    .map(|edges| Plot {
                         part: Part::Edge(*edges.first().unwrap(), *edges.get(1).unwrap()),
                         vector: Vector2::from_polar(SENTENCE_RADIUS, word_origin),
                         radius: WORD_RADIUS,
@@ -271,7 +271,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             /* Step 5:
                 Add notch between current and next words on the inner sentence circle.
             */
-            plots.push(GPlot {
+            plots.push(Plot {
                 part: Part::Notch,
                 vector: Vector2::from_polar(
                     INNER_CIRCLE_RATIO * SENTENCE_RADIUS,
@@ -307,10 +307,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         })
         .collect();
     sentence_edges.rotate_left(1);
-    let mut sentence_edge_plots: Vec<GPlot> = sentence_edges
+    let mut sentence_edge_plots: Vec<Plot> = sentence_edges
         .chunks_exact(2)
         .scan(0.0, |word_origin, edges| {
-            let notch_edge = GPlot {
+            let notch_edge = Plot {
                 part: Part::Edge(*edges.first().unwrap(), *edges.get(1).unwrap()),
                 vector: Vector2::from_polar(0.0, *word_origin),
                 radius: INNER_CIRCLE_RATIO * SENTENCE_RADIUS,
@@ -322,7 +322,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .collect();
 
     // Create outer sentence circle plots.
-    sentence_plots.push(GPlot {
+    sentence_plots.push(Plot {
         part: Part::New,
         vector: Vector2::from_polar(0.0, 0.0),
         radius: OUTTER_CIRCLE_RATIO * SENTENCE_RADIUS,
