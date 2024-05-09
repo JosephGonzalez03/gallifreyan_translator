@@ -114,102 +114,70 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                             *letter_origin += (2.0 * PI) / number_of_letter_positions;
                         }
 
-                        let letter_circle_plots: Vec<Plot> = if token.is_letter() {
-                            token
-                                .parts()
-                                .into_iter()
-                                .map(|part| {
-                                    let mut letter_vector = Vector2::from_polar(
-                                        match part {
+                        let letter_circle_plots: Vec<Plot> = token
+                            .parts()
+                            .into_iter()
+                            .map(|part| {
+                                let mut letter_vector = Vector2::from_polar(
+                                    match part {
+                                        Part::Crescent => CRESCENT_BASE_RATIO,
+                                        Part::Full => FULL_BASE_RATIO,
+                                        Part::Moon(_) => MOON_BASE_RATIO,
+                                        _ if part.is_modifier() => match token
+                                            .parts()
+                                            .into_iter()
+                                            .filter(|part| part.is_base())
+                                            .nth(0)
+                                            .unwrap()
+                                        {
                                             Part::Crescent => CRESCENT_BASE_RATIO,
                                             Part::Full => FULL_BASE_RATIO,
-                                            Part::Moon(_) => MOON_BASE_RATIO,
-                                            _ if part.is_modifier() => match token
-                                                .parts()
-                                                .into_iter()
-                                                .filter(|part| part.is_base())
-                                                .nth(0)
-                                                .unwrap()
-                                            {
-                                                Part::Crescent => CRESCENT_BASE_RATIO,
-                                                Part::Full => FULL_BASE_RATIO,
-                                                _ => 0.0,
-                                            },
+                                            _ => 0.0,
+                                        },
+                                        _ => 0.0,
+                                    } * LETTER_RADIUS,
+                                    letter_origin.as_f64()
+                                        + match part {
+                                            Part::Moon(offset) | Part::VowelLine1(offset) => offset,
+                                            _ => 0.0,
+                                        },
+                                );
+
+                                if !is_stand_alone_letter {
+                                    letter_vector += Vector2::from_polar(
+                                        match tokens
+                                            .iter()
+                                            .nth(index - 1)
+                                            .unwrap()
+                                            .parts()
+                                            .into_iter()
+                                            .filter(|part| part.is_base())
+                                            .nth(0)
+                                            .unwrap()
+                                        {
+                                            Part::Crescent => CRESCENT_BASE_RATIO,
+                                            Part::Full => FULL_BASE_RATIO,
                                             _ => 0.0,
                                         } * LETTER_RADIUS,
-                                        letter_origin.as_f64()
-                                            + match part {
-                                                Part::Moon(offset) | Part::VowelLine1(offset) => {
-                                                    offset
-                                                }
-                                                _ => 0.0,
-                                            },
+                                        letter_origin.as_f64(),
                                     );
+                                }
 
-                                    if !is_stand_alone_letter {
-                                        letter_vector += Vector2::from_polar(
-                                            match tokens
-                                                .iter()
-                                                .nth(index - 1)
-                                                .unwrap()
-                                                .parts()
-                                                .into_iter()
-                                                .filter(|part| part.is_base())
-                                                .nth(0)
-                                                .unwrap()
-                                            {
-                                                Part::Crescent => CRESCENT_BASE_RATIO,
-                                                Part::Full => FULL_BASE_RATIO,
-                                                _ => 0.0,
-                                            } * LETTER_RADIUS,
-                                            letter_origin.as_f64(),
-                                        );
-                                    }
-
-                                    Plot {
-                                        part,
-                                        vector: Vector2::from_polar(SENTENCE_RADIUS, word_origin)
-                                            + Vector2::from_polar(WORD_RADIUS, *letter_origin)
-                                            - letter_vector,
-                                        radius: match part {
-                                            Part::Moon(_) | Part::Core | Part::VowelLine1(_) => {
-                                                LETTER_RADIUS / 3.0
-                                            }
-                                            _ => LETTER_RADIUS,
-                                        },
-                                        offset: letter_origin.clone(),
-                                    }
-                                })
-                                .collect()
-                        } else {
-                            token
-                                .parts()
-                                .into_iter()
-                                .map(|part| {
-                                    // Calculate the vector with respect to the sentence, word, and letter.
-                                    let word_radius = NOTCH_BASE_RATIO * WORD_RADIUS;
-
-                                    Plot {
-                                        part,
-                                        vector: Vector2::from_polar(SENTENCE_RADIUS, word_origin)
-                                            - Vector2::from_polar(
-                                                word_radius,
-                                                letter_origin.as_f64()
-                                                    + match part {
-                                                        Part::Moon(offset)
-                                                        | Part::VowelLine1(offset) => offset,
-                                                        _ => 0.0,
-                                                    },
-                                            ),
-                                        radius: match part {
-                                            Part::Moon(_) | Part::Core => LETTER_RADIUS / 3.0,
-                                            _ => LETTER_RADIUS,
-                                        },
-                                        offset: letter_origin.clone(),
-                                    }
-                                })
-                                .collect()
-                        };
+                                Plot {
+                                    part,
+                                    vector: Vector2::from_polar(SENTENCE_RADIUS, word_origin)
+                                        + Vector2::from_polar(WORD_RADIUS, *letter_origin)
+                                        - letter_vector,
+                                    radius: match part {
+                                        Part::Moon(_) | Part::Core | Part::VowelLine1(_) => {
+                                            LETTER_RADIUS / 3.0
+                                        }
+                                        _ => LETTER_RADIUS,
+                                    },
+                                    offset: letter_origin.clone(),
+                                }
+                            })
+                            .collect();
                         Some(letter_circle_plots)
                     },
                 )
