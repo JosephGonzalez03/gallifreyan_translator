@@ -228,7 +228,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             word_circle_plots.push(Plot {
                 part: Part::Notch,
                 vector: Vector2::from_polar(
-                    INNER_CIRCLE_RATIO * SENTENCE_RADIUS,
+                    INNER_SENTENCE_CIRCLE_RATIO * SENTENCE_RADIUS,
                     *word_origin + notch_offset,
                 ) - Vector2::from_polar(
                     NOTCH_BASE_RATIO * WORD_RADIUS,
@@ -254,7 +254,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .filter(|plot| plot.part == Part::Notch)
         .flat_map(|plot| {
             let sentence_notch_offset = ((WORD_RADIUS * NOTCH_BASE_OFFSET.sin())
-                / (INNER_CIRCLE_RATIO * SENTENCE_RADIUS))
+                / (INNER_SENTENCE_CIRCLE_RATIO * SENTENCE_RADIUS))
                 .asin();
             vec![
                 plot.offset - sentence_notch_offset,
@@ -269,7 +269,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let notch_edge = Plot {
                 part: Part::Edge(*edges.first().unwrap(), *edges.get(1).unwrap()),
                 vector: Vector2::from_polar(0.0, *word_origin),
-                radius: INNER_CIRCLE_RATIO * SENTENCE_RADIUS,
+                radius: INNER_SENTENCE_CIRCLE_RATIO * SENTENCE_RADIUS,
                 offset: 0.0,
             };
             *word_origin += (2.0 * PI) / word_count;
@@ -282,7 +282,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     sentence_circle_plots.push(Plot {
         part: Part::New,
         vector: Vector2::from_polar(0.0, 0.0),
-        radius: OUTTER_CIRCLE_RATIO * SENTENCE_RADIUS,
+        radius: OUTTER_SENTENCE_CIRCLE_RATIO * SENTENCE_RADIUS,
         offset: 0.0,
     });
 
@@ -436,8 +436,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-const INNER_CIRCLE_RATIO: f64 = 1.6;
-const OUTTER_CIRCLE_RATIO: f64 = 1.8;
+const INNER_SENTENCE_CIRCLE_RATIO: f64 = 1.6;
+const OUTTER_SENTENCE_CIRCLE_RATIO: f64 = 1.8;
 const NOTCH_BASE_RATIO: f64 = 0.15;
 const CRESCENT_BASE_RATIO: f64 = 0.9;
 const FULL_BASE_RATIO: f64 = 1.2;
