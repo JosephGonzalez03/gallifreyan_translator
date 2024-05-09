@@ -44,8 +44,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     chart.configure_mesh().draw()?;
     let word_count: f64 = word.split_terminator(" ").map(|_| 1.0).sum();
     let notch_offset: f64 = PI / word_count;
-
-    // Create word and letter plots.
     let mut sentence_circle_plots: Vec<Plot> = word
         .to_uppercase()
         .replace("\n", "")
@@ -248,7 +246,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .flatten()
         .collect();
 
-    // Create inner sentence circle plots.
     let mut inner_sentence_circle_edges: Vec<f64> = sentence_circle_plots
         .iter()
         .filter(|plot| plot.part == Part::Notch)
@@ -263,6 +260,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         })
         .collect();
     inner_sentence_circle_edges.rotate_left(1);
+
     let mut inner_sentence_circle_edge_plots: Vec<Plot> = inner_sentence_circle_edges
         .chunks_exact(2)
         .scan(0.0, |word_origin, edges| {
@@ -277,16 +275,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         })
         .collect();
     sentence_circle_plots.append(&mut inner_sentence_circle_edge_plots);
-
-    // Create outer sentence circle plots.
     sentence_circle_plots.push(Plot {
         part: Part::New,
         vector: Vector2::from_polar(0.0, 0.0),
         radius: OUTTER_SENTENCE_CIRCLE_RATIO * SENTENCE_RADIUS,
         offset: 0.0,
     });
-
-    // Draw plots.
     sentence_circle_plots
         .into_iter()
         .map(|plot| match plot.part {
