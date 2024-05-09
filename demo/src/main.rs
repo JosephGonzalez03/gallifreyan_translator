@@ -51,10 +51,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .replace("\n", "")
         .split_terminator(" ")
         .into_iter()
-        .enumerate()
-        .flat_map(|(index, word)| {
-            let word_origin = (((2.0 * PI) / word_count) * index as f64) - FRAC_PI_2;
-
+        .scan(-FRAC_PI_2, |word_origin, word| {
             /* Step 1:
                 Parse each character in a word into a Gallifreyan token. Keep in mind that some
                 Gallifreyan letters combine two english letters.
@@ -165,7 +162,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                                 Plot {
                                     part,
-                                    vector: Vector2::from_polar(SENTENCE_RADIUS, word_origin)
+                                    vector: Vector2::from_polar(SENTENCE_RADIUS, *word_origin)
                                         + Vector2::from_polar(WORD_RADIUS, *letter_origin)
                                         - letter_vector,
                                     radius: match part {
@@ -208,7 +205,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             let mut word_circle_edge_plots: Vec<Plot> = if word_circle_edges.len() == 0 {
                 vec![Plot {
                     part: Part::Edge(0.0, 2.0 * PI),
-                    vector: Vector2::from_polar(SENTENCE_RADIUS, word_origin),
+                    vector: Vector2::from_polar(SENTENCE_RADIUS, *word_origin),
                     radius: WORD_RADIUS,
                     offset: 0.0,
                 }]
@@ -218,7 +215,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     .chunks_exact(2)
                     .map(|edges| Plot {
                         part: Part::Edge(*edges.first().unwrap(), *edges.get(1).unwrap()),
-                        vector: Vector2::from_polar(SENTENCE_RADIUS, word_origin),
+                        vector: Vector2::from_polar(SENTENCE_RADIUS, *word_origin),
                         radius: WORD_RADIUS,
                         offset: 0.0,
                     })
@@ -232,21 +229,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 part: Part::Notch,
                 vector: Vector2::from_polar(
                     INNER_CIRCLE_RATIO * SENTENCE_RADIUS,
-                    word_origin + notch_offset,
+                    *word_origin + notch_offset,
                 ) - Vector2::from_polar(
                     NOTCH_BASE_RATIO * WORD_RADIUS,
-                    word_origin + notch_offset,
+                    *word_origin + notch_offset,
                 ),
                 radius: WORD_RADIUS,
-                offset: word_origin + notch_offset + PI,
+                offset: *word_origin + notch_offset + PI,
             });
 
             /* Step 6:
                 Add edge plots to the plots collection and return all of them from this function.
             */
             word_circle_plots.append(&mut word_circle_edge_plots);
-            word_circle_plots
+            *word_origin += (2.0 * PI) / word_count;
+            Some(word_circle_plots)
         })
+        .flatten()
         .collect();
 
     // Create inner sentence circle plots.
