@@ -114,7 +114,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                             *letter_origin += (2.0 * PI) / number_of_letter_positions;
                         }
 
-                        let gplots: Vec<Plot> = if token.is_letter() {
+                        let plots: Vec<Plot> = if token.is_letter() {
                             token
                                 .parts()
                                 .into_iter()
@@ -210,7 +210,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 })
                                 .collect()
                         };
-                        Some(gplots)
+                        Some(plots)
                     },
                 )
                 .flatten()
