@@ -49,10 +49,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .split_terminator(" ")
         .into_iter()
         .scan(-FRAC_PI_2, |word_origin, word| {
-            /* Step 1:
-                Parse each character in a word into a Gallifreyan token. Keep in mind that some
-                Gallifreyan letters combine two english letters.
-            */
             let mut tokens: Vec<GallifreyanToken> = Vec::new();
             let mut char_iter = word.chars().into_iter().peekable();
 
@@ -69,10 +65,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 tokens.push(GallifreyanToken::from_str(letter.as_str()).unwrap());
             }
 
-            /* Step 2:
-                Determine the positions of the letters on the circle. Keep in mind that vowels
-                that follow a consonant are placed on the consonant.
-            */
             let number_of_letter_positions: f64 = tokens
                 .iter()
                 .filter(|token| token.is_letter())
@@ -87,10 +79,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 })
                 .sum();
 
-            /* Step 3:
-                Decompose the letters from (1) into their parts and their positions vectors with the
-                number of positions from (2).
-            */
             let mut word_circle_plots: Vec<Plot> = tokens
                 .iter()
                 .scan(false, |is_previous_letter_a_consonant, token| {
@@ -178,10 +166,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .flatten()
                 .collect();
 
-            /* Step 4:
-                Create the edges that connect the letters together using the parts of letters
-                (Crescent and Quarter) that touch the word circle.
-            */
             let mut word_circle_edges: Vec<f64> = word_circle_plots
                 .iter()
                 .filter(|plot| [Part::Crescent, Part::Quarter].contains(&plot.part))
@@ -219,9 +203,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     .collect()
             };
 
-            /* Step 5:
-                Add edge plots to the plots collection and return all of them from this function.
-            */
             word_circle_plots.append(&mut word_circle_edge_plots);
             *word_origin += (2.0 * PI) / word_count;
             Some(word_circle_plots)
