@@ -119,63 +119,69 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 .parts()
                                 .into_iter()
                                 .map(|part| {
-                                    // Calculate the vector with respect to the sentence, word, and letter.
-                                    let mut letter_radius = match part {
-                                        Part::Crescent => CRESCENT_BASE_RATIO,
-                                        Part::Full => FULL_BASE_RATIO,
-                                        Part::Moon(_) => 0.0,
-                                        _ => DEFAULT_BASE_RATIO,
-                                    } * LETTER_RADIUS;
-
                                     /*
-                                        Subtract the base to put the vowel base or modifier part inline with
-                                        the base.
+                                        Determine the letter's initial vector:
+                                        1. Crescent, Full, and Moon are only bases that are off of the word
+                                            circle.
+                                        2. Modifiers need to be attached to letter's base.
                                     */
-                                    if !is_stand_alone_letter || part.is_modifier() {
-                                        letter_radius += match token
-                                            .parts()
-                                            .into_iter()
-                                            .filter(|part| part.is_base())
-                                            .nth(0)
-                                            .unwrap()
-                                        {
+                                    let mut letter_vector = Vector2::from_polar(
+                                        match part {
                                             Part::Crescent => CRESCENT_BASE_RATIO,
                                             Part::Full => FULL_BASE_RATIO,
                                             Part::Moon(_) => MOON_BASE_RATIO,
-                                            _ => DEFAULT_BASE_RATIO,
-                                        } * LETTER_RADIUS;
-                                    }
+                                            _ if part.is_modifier() => match token
+                                                .parts()
+                                                .into_iter()
+                                                .filter(|part| part.is_base())
+                                                .nth(0)
+                                                .unwrap()
+                                            {
+                                                Part::Crescent => CRESCENT_BASE_RATIO,
+                                                Part::Full => FULL_BASE_RATIO,
+                                                _ => 0.0,
+                                            },
+                                            _ => 0.0,
+                                        } * LETTER_RADIUS,
+                                        letter_origin.as_f64()
+                                            + match part {
+                                                Part::Moon(offset) | Part::VowelLine1(offset) => {
+                                                    offset
+                                                }
+                                                _ => 0.0,
+                                            },
+                                    );
 
                                     /*
-                                        Subtract the consonant's base to put the vowel that follows a consonant
-                                        lnline with the consonant's base.
+                                        Add the previous letter's base to the current letter's vector for
+                                        a vowel that follows a consonant. This attaches the vowel to the
+                                        consonant.
                                     */
-                                    if !is_stand_alone_letter && part.is_base() {
-                                        letter_radius += match tokens
-                                            .iter()
-                                            .nth(index - 1)
-                                            .unwrap()
-                                            .parts()
-                                            .into_iter()
-                                            .filter(|part| part.is_base())
-                                            .nth(0)
-                                            .unwrap()
-                                        {
-                                            Part::Crescent => CRESCENT_BASE_RATIO,
-                                            Part::Full => FULL_BASE_RATIO,
-                                            Part::Moon(_) => MOON_BASE_RATIO,
-                                            _ => DEFAULT_BASE_RATIO,
-                                        } * LETTER_RADIUS;
+                                    if !is_stand_alone_letter {
+                                        letter_vector += Vector2::from_polar(
+                                            match tokens
+                                                .iter()
+                                                .nth(index - 1)
+                                                .unwrap()
+                                                .parts()
+                                                .into_iter()
+                                                .filter(|part| part.is_base())
+                                                .nth(0)
+                                                .unwrap()
+                                            {
+                                                Part::Crescent => CRESCENT_BASE_RATIO,
+                                                Part::Full => FULL_BASE_RATIO,
+                                                _ => 0.0,
+                                            } * LETTER_RADIUS,
+                                            letter_origin.as_f64(),
+                                        );
                                     }
 
                                     GPlot {
                                         part,
                                         vector: Vector2::from_polar(SENTENCE_RADIUS, word_origin)
                                             + Vector2::from_polar(WORD_RADIUS, *letter_origin)
-                                            - Vector2::from_polar(
-                                                letter_radius,
-                                                letter_origin.as_f64(),
-                                            ),
+                                            - letter_vector,
                                         radius: match part {
                                             Part::Moon(_) | Part::Core | Part::VowelLine1(_) => {
                                                 LETTER_RADIUS / 3.0
@@ -480,7 +486,6 @@ const NOTCH_BASE_RATIO: f64 = 0.15;
 const CRESCENT_BASE_RATIO: f64 = 0.9;
 const FULL_BASE_RATIO: f64 = 1.2;
 const MOON_BASE_RATIO: f64 = 1.0;
-const DEFAULT_BASE_RATIO: f64 = 0.0;
 const NOTCH_BASE_OFFSET: f64 = FRAC_PI_2;
 const CRESCENT_BASE_OFFSET: f64 = FRAC_PI_6;
 const QUARTER_BASE_OFFSET: f64 = 5.0 * PI / 9.0;
