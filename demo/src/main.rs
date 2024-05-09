@@ -43,7 +43,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .build_cartesian_2d(-20f32..20f32, -20f32..20f32)?;
     chart.configure_mesh().draw()?;
     let word_count: f64 = word.split_terminator(" ").map(|_| 1.0).sum();
-    let notch_offset: f64 = PI / word_count;
     let mut sentence_circle_plots: Vec<Plot> = word
         .to_uppercase()
         .replace("\n", "")
@@ -221,9 +220,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             };
 
             /* Step 5:
-                Add notch between current and next words on the inner sentence circle.
+                Add edge plots to the plots collection and return all of them from this function.
             */
-            word_circle_plots.push(Plot {
+            word_circle_plots.append(&mut word_circle_edge_plots);
+            *word_origin += (2.0 * PI) / word_count;
+            Some(word_circle_plots)
+        })
+        .flatten()
+        .collect();
+
+    let notch_offset: f64 = PI / word_count;
+    let mut inner_sentence_circle_notch_plots: Vec<Plot> = sentence_circle_plots
+        .iter()
+        .scan(-FRAC_PI_2, |word_origin, _| {
+            let notch_plot = Plot {
                 part: Part::Notch,
                 vector: Vector2::from_polar(
                     INNER_SENTENCE_CIRCLE_RATIO * SENTENCE_RADIUS,
@@ -234,21 +244,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 ),
                 radius: WORD_RADIUS,
                 offset: *word_origin + notch_offset + PI,
-            });
-
-            /* Step 6:
-                Add edge plots to the plots collection and return all of them from this function.
-            */
-            word_circle_plots.append(&mut word_circle_edge_plots);
+            };
             *word_origin += (2.0 * PI) / word_count;
-            Some(word_circle_plots)
+            Some(notch_plot)
         })
-        .flatten()
         .collect();
 
-    let mut inner_sentence_circle_edges: Vec<f64> = sentence_circle_plots
+    let mut inner_sentence_circle_edges: Vec<f64> = inner_sentence_circle_notch_plots
         .iter()
-        .filter(|plot| plot.part == Part::Notch)
         .flat_map(|plot| {
             let sentence_notch_offset = ((WORD_RADIUS * NOTCH_BASE_OFFSET.sin())
                 / (INNER_SENTENCE_CIRCLE_RATIO * SENTENCE_RADIUS))
@@ -274,6 +277,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             Some(notch_edge)
         })
         .collect();
+    sentence_circle_plots.append(&mut inner_sentence_circle_notch_plots);
     sentence_circle_plots.append(&mut inner_sentence_circle_edge_plots);
     sentence_circle_plots.push(Plot {
         part: Part::New,
