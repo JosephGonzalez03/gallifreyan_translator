@@ -119,12 +119,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 .parts()
                                 .into_iter()
                                 .map(|part| {
-                                    /*
-                                        Determine the letter's initial vector:
-                                        1. Crescent, Full, and Moon are only bases that are off of the word
-                                            circle.
-                                        2. Modifiers need to be attached to letter's base.
-                                    */
                                     let mut letter_vector = Vector2::from_polar(
                                         match part {
                                             Part::Crescent => CRESCENT_BASE_RATIO,
@@ -152,11 +146,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                                             },
                                     );
 
-                                    /*
-                                        Add the previous letter's base to the current letter's vector for
-                                        a vowel that follows a consonant. This attaches the vowel to the
-                                        consonant.
-                                    */
                                     if !is_stand_alone_letter {
                                         letter_vector += Vector2::from_polar(
                                             match tokens
