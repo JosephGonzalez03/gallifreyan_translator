@@ -249,7 +249,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .collect();
 
     // Create inner sentence circle plots.
-    let mut sentence_circle_edges: Vec<f64> = sentence_circle_plots
+    let mut inner_sentence_circle_edges: Vec<f64> = sentence_circle_plots
         .iter()
         .filter(|plot| plot.part == Part::Notch)
         .flat_map(|plot| {
@@ -262,8 +262,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             ]
         })
         .collect();
-    sentence_circle_edges.rotate_left(1);
-    let mut sentence_circle_edge_plots: Vec<Plot> = sentence_circle_edges
+    inner_sentence_circle_edges.rotate_left(1);
+    let mut inner_sentence_circle_edge_plots: Vec<Plot> = inner_sentence_circle_edges
         .chunks_exact(2)
         .scan(0.0, |word_origin, edges| {
             let notch_edge = Plot {
@@ -276,6 +276,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             Some(notch_edge)
         })
         .collect();
+    sentence_circle_plots.append(&mut inner_sentence_circle_edge_plots);
 
     // Create outer sentence circle plots.
     sentence_circle_plots.push(Plot {
@@ -284,7 +285,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         radius: OUTTER_CIRCLE_RATIO * SENTENCE_RADIUS,
         offset: 0.0,
     });
-    sentence_circle_plots.append(&mut sentence_circle_edge_plots);
 
     // Draw plots.
     sentence_circle_plots
