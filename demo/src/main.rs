@@ -42,230 +42,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .y_label_area_size(30)
         .build_cartesian_2d(-20f32..20f32, -20f32..20f32)?;
     chart.configure_mesh().draw()?;
-    let word_count: f64 = word.split_terminator(" ").map(|_| 1.0).sum();
-    let mut sentence_circle_plots: Vec<Plot> = word
-        .to_uppercase()
-        .replace("\n", "")
-        .split_terminator(" ")
-        .into_iter()
-        .scan(-FRAC_PI_2, |word_origin, word| {
-            let mut tokens: Vec<GallifreyanToken> = Vec::new();
-            let mut char_iter = word.chars().into_iter().peekable();
+    let sentence_circle_plots: Vec<Plot> = get_sentence_circle_plots(word);
 
-            while let Some(current_letter) = char_iter.next() {
-                let letter = if (['C', 'P', 'W', 'S', 'T', 'G'].contains(&current_letter)
-                    && 'H'.eq(char_iter.peek().unwrap_or(&'>')))
-                    || ('Q'.eq(&current_letter) && 'U'.eq(char_iter.peek().unwrap_or(&'>')))
-                    || ('N'.eq(&current_letter) && 'G'.eq(char_iter.peek().unwrap_or(&'>')))
-                {
-                    current_letter.to_string() + &char_iter.next().unwrap().to_string()
-                } else {
-                    current_letter.to_string()
-                };
-                tokens.push(GallifreyanToken::from_str(letter.as_str()).unwrap());
-            }
-
-            let number_of_letter_positions: f64 = tokens
-                .iter()
-                .filter(|token| token.is_letter())
-                .scan(false, |is_previous_letter_a_consonant, letter| {
-                    let result = if *is_previous_letter_a_consonant && letter.is_vowel() {
-                        0.0
-                    } else {
-                        1.0
-                    };
-                    *is_previous_letter_a_consonant = !letter.is_vowel();
-                    return Some(result);
-                })
-                .sum();
-
-            let mut word_circle_plots: Vec<Plot> = tokens
-                .iter()
-                .scan(false, |is_previous_letter_a_consonant, token| {
-                    let is_stand_alone_letter =
-                        !(*is_previous_letter_a_consonant && token.is_vowel());
-                    *is_previous_letter_a_consonant = !token.is_vowel();
-                    return Some(is_stand_alone_letter);
-                })
-                .zip(tokens.iter())
-                .enumerate()
-                .scan(
-                    -FRAC_PI_2,
-                    |letter_origin, (index, (is_stand_alone_letter, token))| {
-                        if is_stand_alone_letter && index != 0 {
-                            *letter_origin += (2.0 * PI) / number_of_letter_positions;
-                        }
-
-                        let letter_circle_plots: Vec<Plot> = token
-                            .parts()
-                            .into_iter()
-                            .map(|part| {
-                                let mut letter_vector = Vector2::from_polar(
-                                    match part {
-                                        Part::Crescent => CRESCENT_BASE_RATIO,
-                                        Part::Full => FULL_BASE_RATIO,
-                                        Part::Moon(_) => MOON_BASE_RATIO,
-                                        _ if part.is_modifier() => match token
-                                            .parts()
-                                            .into_iter()
-                                            .filter(|part| part.is_base())
-                                            .nth(0)
-                                            .unwrap()
-                                        {
-                                            Part::Crescent => CRESCENT_BASE_RATIO,
-                                            Part::Full => FULL_BASE_RATIO,
-                                            _ => 0.0,
-                                        },
-                                        _ => 0.0,
-                                    } * LETTER_RADIUS,
-                                    letter_origin.as_f64()
-                                        + match part {
-                                            Part::Moon(offset) | Part::VowelLine1(offset) => offset,
-                                            _ => 0.0,
-                                        },
-                                );
-
-                                if !is_stand_alone_letter {
-                                    letter_vector += Vector2::from_polar(
-                                        match tokens
-                                            .iter()
-                                            .nth(index - 1)
-                                            .unwrap()
-                                            .parts()
-                                            .into_iter()
-                                            .filter(|part| part.is_base())
-                                            .nth(0)
-                                            .unwrap()
-                                        {
-                                            Part::Crescent => CRESCENT_BASE_RATIO,
-                                            Part::Full => FULL_BASE_RATIO,
-                                            _ => 0.0,
-                                        } * LETTER_RADIUS,
-                                        letter_origin.as_f64(),
-                                    );
-                                }
-
-                                Plot {
-                                    part,
-                                    vector: Vector2::from_polar(SENTENCE_RADIUS, *word_origin)
-                                        + Vector2::from_polar(WORD_RADIUS, *letter_origin)
-                                        - letter_vector,
-                                    radius: match part {
-                                        Part::Moon(_) | Part::Core | Part::VowelLine1(_) => {
-                                            LETTER_RADIUS / 3.0
-                                        }
-                                        _ => LETTER_RADIUS,
-                                    },
-                                    offset: letter_origin.clone(),
-                                }
-                            })
-                            .collect();
-                        Some(letter_circle_plots)
-                    },
-                )
-                .flatten()
-                .collect();
-
-            let mut word_circle_edges: Vec<f64> = word_circle_plots
-                .iter()
-                .filter(|plot| [Part::Crescent, Part::Quarter].contains(&plot.part))
-                .flat_map(|plot| {
-                    let edge_offset = ((LETTER_RADIUS
-                        * match plot.part {
-                            Part::Crescent => CRESCENT_BASE_OFFSET,
-                            Part::Quarter => QUARTER_BASE_OFFSET,
-                            _ => panic!("Should not be here!"),
-                        }
-                        .sin())
-                        / WORD_RADIUS)
-                        .asin();
-                    vec![plot.offset - edge_offset, plot.offset + edge_offset]
-                })
-                .collect();
-
-            let mut word_circle_edge_plots: Vec<Plot> = if word_circle_edges.len() == 0 {
-                vec![Plot {
-                    part: Part::Edge(0.0, 2.0 * PI),
-                    vector: Vector2::from_polar(SENTENCE_RADIUS, *word_origin),
-                    radius: WORD_RADIUS,
-                    offset: 0.0,
-                }]
-            } else {
-                word_circle_edges.rotate_left(1);
-                word_circle_edges
-                    .chunks_exact(2)
-                    .map(|edges| Plot {
-                        part: Part::Edge(*edges.first().unwrap(), *edges.get(1).unwrap()),
-                        vector: Vector2::from_polar(SENTENCE_RADIUS, *word_origin),
-                        radius: WORD_RADIUS,
-                        offset: 0.0,
-                    })
-                    .collect()
-            };
-
-            word_circle_plots.append(&mut word_circle_edge_plots);
-            *word_origin += (2.0 * PI) / word_count;
-            Some(word_circle_plots)
-        })
-        .flatten()
-        .collect();
-
-    let notch_offset: f64 = PI / word_count;
-    let mut inner_sentence_circle_notch_plots: Vec<Plot> = sentence_circle_plots
-        .iter()
-        .scan(-FRAC_PI_2, |word_origin, _| {
-            let notch_plot = Plot {
-                part: Part::Notch,
-                vector: Vector2::from_polar(
-                    INNER_SENTENCE_CIRCLE_RATIO * SENTENCE_RADIUS,
-                    *word_origin + notch_offset,
-                ) - Vector2::from_polar(
-                    NOTCH_BASE_RATIO * WORD_RADIUS,
-                    *word_origin + notch_offset,
-                ),
-                radius: WORD_RADIUS,
-                offset: *word_origin + notch_offset + PI,
-            };
-            *word_origin += (2.0 * PI) / word_count;
-            Some(notch_plot)
-        })
-        .collect();
-
-    let mut inner_sentence_circle_edges: Vec<f64> = inner_sentence_circle_notch_plots
-        .iter()
-        .flat_map(|plot| {
-            let sentence_notch_offset = ((WORD_RADIUS * NOTCH_BASE_OFFSET.sin())
-                / (INNER_SENTENCE_CIRCLE_RATIO * SENTENCE_RADIUS))
-                .asin();
-            vec![
-                plot.offset - sentence_notch_offset,
-                plot.offset + sentence_notch_offset,
-            ]
-        })
-        .collect();
-    inner_sentence_circle_edges.rotate_left(1);
-
-    let mut inner_sentence_circle_edge_plots: Vec<Plot> = inner_sentence_circle_edges
-        .chunks_exact(2)
-        .scan(0.0, |word_origin, edges| {
-            let notch_edge = Plot {
-                part: Part::Edge(*edges.first().unwrap(), *edges.get(1).unwrap()),
-                vector: Vector2::from_polar(0.0, *word_origin),
-                radius: INNER_SENTENCE_CIRCLE_RATIO * SENTENCE_RADIUS,
-                offset: 0.0,
-            };
-            *word_origin += (2.0 * PI) / word_count;
-            Some(notch_edge)
-        })
-        .collect();
-    sentence_circle_plots.append(&mut inner_sentence_circle_notch_plots);
-    sentence_circle_plots.append(&mut inner_sentence_circle_edge_plots);
-    sentence_circle_plots.push(Plot {
-        part: Part::New,
-        vector: Vector2::from_polar(0.0, 0.0),
-        radius: OUTTER_SENTENCE_CIRCLE_RATIO * SENTENCE_RADIUS,
-        offset: 0.0,
-    });
     sentence_circle_plots
         .into_iter()
         .map(|plot| match plot.part {
@@ -415,16 +193,246 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-const INNER_SENTENCE_CIRCLE_RATIO: f64 = 1.6;
-const OUTTER_SENTENCE_CIRCLE_RATIO: f64 = 1.8;
-const NOTCH_BASE_RATIO: f64 = 0.15;
-const CRESCENT_BASE_RATIO: f64 = 0.9;
-const FULL_BASE_RATIO: f64 = 1.2;
-const MOON_BASE_RATIO: f64 = 1.0;
 const NOTCH_BASE_OFFSET: f64 = FRAC_PI_2;
 const CRESCENT_BASE_OFFSET: f64 = FRAC_PI_6;
 const QUARTER_BASE_OFFSET: f64 = 5.0 * PI / 9.0;
-const DOT_OFFSET: f64 = 0.4;
+
+fn get_sentence_circle_plots(word: String) -> Vec<Plot> {
+    const INNER_SENTENCE_CIRCLE_RATIO: f64 = 1.6;
+    const OUTTER_SENTENCE_CIRCLE_RATIO: f64 = 1.8;
+    const NOTCH_BASE_RATIO: f64 = 0.15;
+
+    let word_count: f64 = word.split_terminator(" ").map(|_| 1.0).sum();
+    let mut sentence_circle_plots: Vec<Plot> = word
+        .to_uppercase()
+        .replace("\n", "")
+        .split_terminator(" ")
+        .into_iter()
+        .scan(-FRAC_PI_2, |word_origin, word| {
+            let mut tokens: Vec<GallifreyanToken> = Vec::new();
+            let mut char_iter = word.chars().into_iter().peekable();
+
+            while let Some(current_letter) = char_iter.next() {
+                let letter = if (['C', 'P', 'W', 'S', 'T', 'G'].contains(&current_letter)
+                    && 'H'.eq(char_iter.peek().unwrap_or(&'>')))
+                    || ('Q'.eq(&current_letter) && 'U'.eq(char_iter.peek().unwrap_or(&'>')))
+                    || ('N'.eq(&current_letter) && 'G'.eq(char_iter.peek().unwrap_or(&'>')))
+                {
+                    current_letter.to_string() + &char_iter.next().unwrap().to_string()
+                } else {
+                    current_letter.to_string()
+                };
+                tokens.push(GallifreyanToken::from_str(letter.as_str()).unwrap());
+            }
+
+            let word_circle_plots: Vec<Plot> = get_word_circle_plots(tokens, *word_origin);
+
+            *word_origin += (2.0 * PI) / word_count;
+            Some(word_circle_plots)
+        })
+        .flatten()
+        .collect();
+    let notch_offset: f64 = PI / word_count;
+    let mut inner_sentence_circle_notch_plots: Vec<Plot> = sentence_circle_plots
+        .iter()
+        .scan(-FRAC_PI_2, |word_origin, _| {
+            let notch_plot = Plot {
+                part: Part::Notch,
+                vector: Vector2::from_polar(
+                    INNER_SENTENCE_CIRCLE_RATIO * SENTENCE_RADIUS,
+                    *word_origin + notch_offset,
+                ) - Vector2::from_polar(
+                    NOTCH_BASE_RATIO * WORD_RADIUS,
+                    *word_origin + notch_offset,
+                ),
+                radius: WORD_RADIUS,
+                offset: *word_origin + notch_offset + PI,
+            };
+            *word_origin += (2.0 * PI) / word_count;
+            Some(notch_plot)
+        })
+        .collect();
+
+    let mut inner_sentence_circle_edges: Vec<f64> = inner_sentence_circle_notch_plots
+        .iter()
+        .flat_map(|plot| {
+            let sentence_notch_offset = ((WORD_RADIUS * NOTCH_BASE_OFFSET.sin())
+                / (INNER_SENTENCE_CIRCLE_RATIO * SENTENCE_RADIUS))
+                .asin();
+            vec![
+                plot.offset - sentence_notch_offset,
+                plot.offset + sentence_notch_offset,
+            ]
+        })
+        .collect();
+    inner_sentence_circle_edges.rotate_left(1);
+
+    let mut inner_sentence_circle_edge_plots: Vec<Plot> = inner_sentence_circle_edges
+        .chunks_exact(2)
+        .scan(-FRAC_PI_2, |word_origin, edges| {
+            let notch_edge = Plot {
+                part: Part::Edge(*edges.first().unwrap(), *edges.get(1).unwrap()),
+                vector: Vector2::from_polar(0.0, *word_origin),
+                radius: INNER_SENTENCE_CIRCLE_RATIO * SENTENCE_RADIUS,
+                offset: 0.0,
+            };
+            *word_origin += (2.0 * PI) / word_count;
+            Some(notch_edge)
+        })
+        .collect();
+    sentence_circle_plots.append(&mut inner_sentence_circle_notch_plots);
+    sentence_circle_plots.append(&mut inner_sentence_circle_edge_plots);
+    sentence_circle_plots.push(Plot {
+        part: Part::New,
+        vector: Vector2::from_polar(0.0, 0.0),
+        radius: OUTTER_SENTENCE_CIRCLE_RATIO * SENTENCE_RADIUS,
+        offset: 0.0,
+    });
+    sentence_circle_plots
+}
+
+fn get_word_circle_plots(gallifreyan_tokens: Vec<GallifreyanToken>, word_origin: f64) -> Vec<Plot> {
+    const CRESCENT_BASE_RATIO: f64 = 0.9;
+    const FULL_BASE_RATIO: f64 = 1.2;
+    const MOON_BASE_RATIO: f64 = 1.0;
+
+    let number_of_standalone_letters: f64 = gallifreyan_tokens
+        .iter()
+        .filter(|token| token.is_letter())
+        .scan(false, |is_previous_letter_a_consonant, letter| {
+            let result = if *is_previous_letter_a_consonant && letter.is_vowel() {
+                0.0
+            } else {
+                1.0
+            };
+            *is_previous_letter_a_consonant = !letter.is_vowel();
+            return Some(result);
+        })
+        .sum();
+    let mut word_circle_plots: Vec<Plot> = gallifreyan_tokens
+        .iter()
+        .scan(false, |is_previous_letter_a_consonant, token| {
+            let is_stand_alone_letter = !(*is_previous_letter_a_consonant && token.is_vowel());
+            *is_previous_letter_a_consonant = !token.is_vowel();
+            return Some(is_stand_alone_letter);
+        })
+        .zip(gallifreyan_tokens.iter())
+        .enumerate()
+        .scan(
+            -FRAC_PI_2,
+            |letter_origin, (index, (is_stand_alone_letter, token))| {
+                if is_stand_alone_letter && index != 0 {
+                    *letter_origin += (2.0 * PI) / number_of_standalone_letters;
+                }
+
+                let letter_circle_plots: Vec<Plot> = token
+                    .parts()
+                    .into_iter()
+                    .map(|part| {
+                        let mut letter_vector = Vector2::from_polar(
+                            match part {
+                                Part::Crescent => CRESCENT_BASE_RATIO,
+                                Part::Full => FULL_BASE_RATIO,
+                                Part::Moon(_) => MOON_BASE_RATIO,
+                                _ if part.is_modifier() => match token
+                                    .parts()
+                                    .into_iter()
+                                    .filter(|part| part.is_base())
+                                    .nth(0)
+                                    .unwrap()
+                                {
+                                    Part::Crescent => CRESCENT_BASE_RATIO,
+                                    Part::Full => FULL_BASE_RATIO,
+                                    _ => 0.0,
+                                },
+                                _ => 0.0,
+                            } * LETTER_RADIUS,
+                            letter_origin.as_f64()
+                                + match part {
+                                    Part::Moon(offset) | Part::VowelLine1(offset) => offset,
+                                    _ => 0.0,
+                                },
+                        );
+
+                        if !is_stand_alone_letter {
+                            letter_vector += Vector2::from_polar(
+                                match gallifreyan_tokens
+                                    .iter()
+                                    .nth(index - 1)
+                                    .unwrap()
+                                    .parts()
+                                    .into_iter()
+                                    .filter(|part| part.is_base())
+                                    .nth(0)
+                                    .unwrap()
+                                {
+                                    Part::Crescent => CRESCENT_BASE_RATIO,
+                                    Part::Full => FULL_BASE_RATIO,
+                                    _ => 0.0,
+                                } * LETTER_RADIUS,
+                                letter_origin.as_f64(),
+                            );
+                        }
+
+                        Plot {
+                            part,
+                            vector: Vector2::from_polar(SENTENCE_RADIUS, word_origin)
+                                + Vector2::from_polar(WORD_RADIUS, *letter_origin)
+                                - letter_vector,
+                            radius: match part {
+                                Part::Moon(_) | Part::Core | Part::VowelLine1(_) => {
+                                    LETTER_RADIUS / 3.0
+                                }
+                                _ => LETTER_RADIUS,
+                            },
+                            offset: letter_origin.clone(),
+                        }
+                    })
+                    .collect();
+                Some(letter_circle_plots)
+            },
+        )
+        .flatten()
+        .collect();
+    let mut word_circle_edges: Vec<f64> = word_circle_plots
+        .iter()
+        .filter(|plot| [Part::Crescent, Part::Quarter].contains(&plot.part))
+        .flat_map(|plot| {
+            let edge_offset = ((LETTER_RADIUS
+                * match plot.part {
+                    Part::Crescent => CRESCENT_BASE_OFFSET,
+                    Part::Quarter => QUARTER_BASE_OFFSET,
+                    _ => panic!("Should not be here!"),
+                }
+                .sin())
+                / WORD_RADIUS)
+                .asin();
+            vec![plot.offset - edge_offset, plot.offset + edge_offset]
+        })
+        .collect();
+    let mut word_circle_edge_plots: Vec<Plot> = if word_circle_edges.len() == 0 {
+        vec![Plot {
+            part: Part::Edge(0.0, 2.0 * PI),
+            vector: Vector2::from_polar(SENTENCE_RADIUS, word_origin),
+            radius: WORD_RADIUS,
+            offset: 0.0,
+        }]
+    } else {
+        word_circle_edges.rotate_left(1);
+        word_circle_edges
+            .chunks_exact(2)
+            .map(|edges| Plot {
+                part: Part::Edge(*edges.first().unwrap(), *edges.get(1).unwrap()),
+                vector: Vector2::from_polar(SENTENCE_RADIUS, word_origin),
+                radius: WORD_RADIUS,
+                offset: 0.0,
+            })
+            .collect()
+    };
+
+    word_circle_plots.append(&mut word_circle_edge_plots);
+    word_circle_plots
+}
 
 pub fn draw_base(origin: Vector2, size: f64, range: (f64, f64), offset: f64) -> Vec<(f32, f32)> {
     let start_range = ((range.0 * 180.0) / PI).round() as i64;
@@ -445,6 +453,8 @@ pub fn draw_dots(
     angles: Vec<f64>,
     offset: f64,
 ) -> Vec<Vec<(f32, f32)>> {
+    const DOT_OFFSET: f64 = 0.4;
+
     angles
         .into_iter()
         .map(|angle| origin - Vector2::from_polar(size + DOT_OFFSET, angle + offset))
