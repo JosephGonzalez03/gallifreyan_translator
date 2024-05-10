@@ -269,15 +269,11 @@ fn get_sentence_circle_plots(word: String) -> Vec<Plot> {
 
     let mut inner_sentence_circle_edge_plots: Vec<Plot> = inner_sentence_circle_edges
         .chunks_exact(2)
-        .scan(-FRAC_PI_2, |word_origin, edges| {
-            let notch_edge = Plot {
-                part: Part::Edge(*edges.first().unwrap(), *edges.get(1).unwrap()),
-                vector: Vector2::from_polar(0.0, *word_origin),
-                radius: INNER_SENTENCE_CIRCLE_RATIO * SENTENCE_RADIUS,
-                offset: 0.0,
-            };
-            *word_origin += (2.0 * PI) / word_count;
-            Some(notch_edge)
+        .map(|edges| Plot {
+            part: Part::Edge(*edges.first().unwrap(), *edges.get(1).unwrap()),
+            vector: Vector2::from_polar(0.0, 0.0),
+            radius: INNER_SENTENCE_CIRCLE_RATIO * SENTENCE_RADIUS,
+            offset: PI,
         })
         .collect();
     sentence_circle_plots.append(&mut inner_sentence_circle_notch_plots);
