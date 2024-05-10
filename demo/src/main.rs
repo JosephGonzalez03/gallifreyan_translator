@@ -436,7 +436,7 @@ pub fn draw_base(origin: Vector2, size: f64, range: (f64, f64), offset: f64) -> 
     }
     .map(|angle| origin + Vector2::from_polar(size, (angle as f64 * PI) / 180.0 + offset))
     .map(|vector| (vector.x as f32, vector.y as f32))
-    .collect::<Vec<(f32, f32)>>()
+    .collect()
 }
 
 pub fn draw_dots(
@@ -449,7 +449,7 @@ pub fn draw_dots(
         .into_iter()
         .map(|angle| origin - Vector2::from_polar(size + DOT_OFFSET, angle + offset))
         .map(|vector| vec![(vector.x as f32, vector.y as f32)])
-        .collect::<Vec<Vec<(f32, f32)>>>()
+        .collect()
 }
 
 pub fn draw_lines(
@@ -468,5 +468,5 @@ pub fn draw_lines(
                 (point2.x as f32, point2.y as f32),
             ]
         })
-        .collect::<Vec<Vec<(f32, f32)>>>()
+        .collect()
 }
