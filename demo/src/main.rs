@@ -254,7 +254,6 @@ fn get_sentence_circle_plots(gallifreyan_sentence_tokens: Vec<Vec<GallifreyanTok
             Some(notch_plot)
         })
         .collect();
-
     let mut inner_sentence_circle_edges: Vec<f64> = inner_sentence_circle_notch_plots
         .iter()
         .flat_map(|plot| {
@@ -430,7 +429,6 @@ fn get_word_circle_plots(
             })
             .collect()
     };
-
     word_circle_plots.append(&mut word_circle_edge_plots);
     word_circle_plots
 }
