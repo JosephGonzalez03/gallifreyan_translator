@@ -42,9 +42,31 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .y_label_area_size(30)
         .build_cartesian_2d(-20f32..20f32, -20f32..20f32)?;
     chart.configure_mesh().draw()?;
-    let sentence_circle_plots: Vec<Plot> = get_sentence_circle_plots(word);
+    let gallifreyan_sentence_tokens: Vec<Vec<GallifreyanToken>> = word
+        .to_uppercase()
+        .replace("\n", "")
+        .split_terminator(" ")
+        .into_iter()
+        .map(|word| {
+            let mut tokens: Vec<GallifreyanToken> = Vec::new();
+            let mut char_iter = word.chars().into_iter().peekable();
 
-    sentence_circle_plots
+            while let Some(current_letter) = char_iter.next() {
+                let letter = if (['C', 'P', 'W', 'S', 'T', 'G'].contains(&current_letter)
+                    && 'H'.eq(char_iter.peek().unwrap_or(&'>')))
+                    || ('Q'.eq(&current_letter) && 'U'.eq(char_iter.peek().unwrap_or(&'>')))
+                    || ('N'.eq(&current_letter) && 'G'.eq(char_iter.peek().unwrap_or(&'>')))
+                {
+                    current_letter.to_string() + &char_iter.next().unwrap().to_string()
+                } else {
+                    current_letter.to_string()
+                };
+                tokens.push(GallifreyanToken::from_str(letter.as_str()).unwrap());
+            }
+            tokens
+        })
+        .collect();
+    get_sentence_circle_plots(gallifreyan_sentence_tokens)
         .into_iter()
         .map(|plot| match plot.part {
             Part::Edge(start, end) => Drawing {
@@ -197,36 +219,16 @@ const NOTCH_BASE_OFFSET: f64 = FRAC_PI_2;
 const CRESCENT_BASE_OFFSET: f64 = FRAC_PI_6;
 const QUARTER_BASE_OFFSET: f64 = 5.0 * PI / 9.0;
 
-fn get_sentence_circle_plots(word: String) -> Vec<Plot> {
+fn get_sentence_circle_plots(gallifreyan_sentence_tokens: Vec<Vec<GallifreyanToken>>) -> Vec<Plot> {
     const INNER_SENTENCE_CIRCLE_RATIO: f64 = 1.6;
     const OUTTER_SENTENCE_CIRCLE_RATIO: f64 = 1.8;
     const NOTCH_BASE_RATIO: f64 = 0.15;
 
-    let word_count: f64 = word.split_terminator(" ").map(|_| 1.0).sum();
-    let mut sentence_circle_plots: Vec<Plot> = word
-        .to_uppercase()
-        .replace("\n", "")
-        .split_terminator(" ")
+    let word_count = gallifreyan_sentence_tokens.len() as f64;
+    let mut sentence_circle_plots: Vec<Plot> = gallifreyan_sentence_tokens
         .into_iter()
-        .scan(-FRAC_PI_2, |word_origin, word| {
-            let mut tokens: Vec<GallifreyanToken> = Vec::new();
-            let mut char_iter = word.chars().into_iter().peekable();
-
-            while let Some(current_letter) = char_iter.next() {
-                let letter = if (['C', 'P', 'W', 'S', 'T', 'G'].contains(&current_letter)
-                    && 'H'.eq(char_iter.peek().unwrap_or(&'>')))
-                    || ('Q'.eq(&current_letter) && 'U'.eq(char_iter.peek().unwrap_or(&'>')))
-                    || ('N'.eq(&current_letter) && 'G'.eq(char_iter.peek().unwrap_or(&'>')))
-                {
-                    current_letter.to_string() + &char_iter.next().unwrap().to_string()
-                } else {
-                    current_letter.to_string()
-                };
-                tokens.push(GallifreyanToken::from_str(letter.as_str()).unwrap());
-            }
-
-            let word_circle_plots: Vec<Plot> = get_word_circle_plots(tokens, *word_origin);
-
+        .scan(-FRAC_PI_2, |word_origin, word_tokens| {
+            let word_circle_plots: Vec<Plot> = get_word_circle_plots(word_tokens, *word_origin);
             *word_origin += (2.0 * PI) / word_count;
             Some(word_circle_plots)
         })
@@ -287,12 +289,15 @@ fn get_sentence_circle_plots(word: String) -> Vec<Plot> {
     sentence_circle_plots
 }
 
-fn get_word_circle_plots(gallifreyan_tokens: Vec<GallifreyanToken>, word_origin: f64) -> Vec<Plot> {
+fn get_word_circle_plots(
+    gallifreyan_word_tokens: Vec<GallifreyanToken>,
+    word_origin: f64,
+) -> Vec<Plot> {
     const CRESCENT_BASE_RATIO: f64 = 0.9;
     const FULL_BASE_RATIO: f64 = 1.2;
     const MOON_BASE_RATIO: f64 = 1.0;
 
-    let number_of_standalone_letters: f64 = gallifreyan_tokens
+    let number_of_standalone_letters: f64 = gallifreyan_word_tokens
         .iter()
         .filter(|token| token.is_letter())
         .scan(false, |is_previous_letter_a_consonant, letter| {
@@ -305,14 +310,14 @@ fn get_word_circle_plots(gallifreyan_tokens: Vec<GallifreyanToken>, word_origin:
             return Some(result);
         })
         .sum();
-    let mut word_circle_plots: Vec<Plot> = gallifreyan_tokens
+    let mut word_circle_plots: Vec<Plot> = gallifreyan_word_tokens
         .iter()
         .scan(false, |is_previous_letter_a_consonant, token| {
             let is_stand_alone_letter = !(*is_previous_letter_a_consonant && token.is_vowel());
             *is_previous_letter_a_consonant = !token.is_vowel();
             return Some(is_stand_alone_letter);
         })
-        .zip(gallifreyan_tokens.iter())
+        .zip(gallifreyan_word_tokens.iter())
         .enumerate()
         .scan(
             -FRAC_PI_2,
@@ -352,7 +357,7 @@ fn get_word_circle_plots(gallifreyan_tokens: Vec<GallifreyanToken>, word_origin:
 
                         if !is_stand_alone_letter {
                             letter_vector += Vector2::from_polar(
-                                match gallifreyan_tokens
+                                match gallifreyan_word_tokens
                                     .iter()
                                     .nth(index - 1)
                                     .unwrap()
