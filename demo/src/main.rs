@@ -471,7 +471,7 @@ pub fn draw_lines(
         .into_iter()
         .map(|angle| {
             let point1 = origin - Vector2::from_polar(size, angle + offset);
-            let point2 = origin - Vector2::from_polar(1.5 * size, angle + offset);
+            let point2 = Vector2::from_polar(1.8 * SENTENCE_RADIUS, angle + offset + PI);
             vec![
                 (point1.x as f32, point1.y as f32),
                 (point2.x as f32, point2.y as f32),
