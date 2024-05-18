@@ -189,11 +189,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 ),
                 style: BLUE.stroke_width(1),
             },
-            Part::Notch => Drawing {
+            Part::Divot => Drawing {
                 series: vec![draw_base(
                     plot.vector,
                     plot.radius,
-                    (-NOTCH_BASE_OFFSET, NOTCH_BASE_OFFSET),
+                    (-DIVOT_BASE_OFFSET, DIVOT_BASE_OFFSET),
                     plot.offset,
                 )],
                 style: BROWN.stroke_width(1),
@@ -215,14 +215,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-const NOTCH_BASE_OFFSET: f64 = FRAC_PI_2;
+const DIVOT_BASE_OFFSET: f64 = FRAC_PI_2;
 const CRESCENT_BASE_OFFSET: f64 = FRAC_PI_6;
 const QUARTER_BASE_OFFSET: f64 = 5.0 * PI / 9.0;
 
 fn get_sentence_circle_plots(gallifreyan_sentence_tokens: Vec<Vec<GallifreyanToken>>) -> Vec<Plot> {
     const INNER_SENTENCE_CIRCLE_RATIO: f64 = 1.6;
     const OUTTER_SENTENCE_CIRCLE_RATIO: f64 = 1.8;
-    const NOTCH_BASE_RATIO: f64 = 0.15;
+    const DIVOT_BASE_RATIO: f64 = 0.15;
 
     let word_count = gallifreyan_sentence_tokens.len() as f64;
     let mut sentence_circle_plots: Vec<Plot> = gallifreyan_sentence_tokens
@@ -234,35 +234,35 @@ fn get_sentence_circle_plots(gallifreyan_sentence_tokens: Vec<Vec<GallifreyanTok
         })
         .flatten()
         .collect();
-    let notch_offset: f64 = PI / word_count;
-    let mut inner_sentence_circle_notch_plots: Vec<Plot> = sentence_circle_plots
+    let divot_offset: f64 = PI / word_count;
+    let mut inner_sentence_circle_divot_plots: Vec<Plot> = sentence_circle_plots
         .iter()
         .scan(-FRAC_PI_2, |word_origin, _| {
-            let notch_plot = Plot {
-                part: Part::Notch,
+            let divot_plot = Plot {
+                part: Part::Divot,
                 vector: Vector2::from_polar(
                     INNER_SENTENCE_CIRCLE_RATIO * SENTENCE_RADIUS,
-                    *word_origin + notch_offset,
+                    *word_origin + divot_offset,
                 ) - Vector2::from_polar(
-                    NOTCH_BASE_RATIO * WORD_RADIUS,
-                    *word_origin + notch_offset,
+                    DIVOT_BASE_RATIO * WORD_RADIUS,
+                    *word_origin + divot_offset,
                 ),
                 radius: WORD_RADIUS,
-                offset: *word_origin + notch_offset + PI,
+                offset: *word_origin + divot_offset + PI,
             };
             *word_origin += (2.0 * PI) / word_count;
-            Some(notch_plot)
+            Some(divot_plot)
         })
         .collect();
-    let mut inner_sentence_circle_edges: Vec<f64> = inner_sentence_circle_notch_plots
+    let mut inner_sentence_circle_edges: Vec<f64> = inner_sentence_circle_divot_plots
         .iter()
         .flat_map(|plot| {
-            let sentence_notch_offset = ((WORD_RADIUS * NOTCH_BASE_OFFSET.sin())
+            let sentence_divot_offset = ((WORD_RADIUS * DIVOT_BASE_OFFSET.sin())
                 / (INNER_SENTENCE_CIRCLE_RATIO * SENTENCE_RADIUS))
                 .asin();
             vec![
-                plot.offset - sentence_notch_offset,
-                plot.offset + sentence_notch_offset,
+                plot.offset - sentence_divot_offset,
+                plot.offset + sentence_divot_offset,
             ]
         })
         .collect();
@@ -277,7 +277,7 @@ fn get_sentence_circle_plots(gallifreyan_sentence_tokens: Vec<Vec<GallifreyanTok
             offset: PI,
         })
         .collect();
-    sentence_circle_plots.append(&mut inner_sentence_circle_notch_plots);
+    sentence_circle_plots.append(&mut inner_sentence_circle_divot_plots);
     sentence_circle_plots.append(&mut inner_sentence_circle_edge_plots);
     sentence_circle_plots.push(Plot {
         part: Part::New,

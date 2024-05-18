@@ -238,7 +238,7 @@ pub enum Part {
     Line1,
     Line2,
     Line3,
-    Notch,
+    Divot,
     Edge(f64, f64),
 }
 
@@ -259,7 +259,7 @@ impl Display for Part {
             Part::Line1 => write!(f, "Line1"),
             Part::Line2 => write!(f, "Line2"),
             Part::Line3 => write!(f, "Line3"),
-            Part::Notch => write!(f, "Notch"),
+            Part::Divot => write!(f, "Divot"),
             Part::Edge(_, _) => write!(f, "Edge"),
         }
     }
@@ -275,7 +275,7 @@ impl Part {
                 | Part::Quarter
                 | Part::New
                 | Part::Moon(_)
-                | Part::Notch
+                | Part::Divot
         )
     }
 
